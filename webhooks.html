@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. Webhook Contact &amp; Company — xINBOX Docs</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Webhook Spec</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
+        <a href="./webhooks.html" class="nav-tab is-active" aria-current="page">4. Webhook</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="mobileTocBtn" class="icon-btn mobile-toc-btn" type="button" aria-expanded="false" aria-controls="tocSidebar">Mục lục</button>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Tìm event, header, hmac..." aria-label="Tìm nhanh trong trang" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside id="tocSidebar" class="toc-sidebar" aria-label="Mục lục trang">
+      <p class="toc-title">Mục lục Tài liệu</p>
+      <ul class="toc-list">
+        <li><a class="toc-link is-active" href="#sec-summary">1. Tóm tắt Sự kiện</a></li>
+        <li><a class="toc-link" href="#sec-register">2. Cách đăng ký Webhook</a></li>
+        <li><a class="toc-link" href="#sec-delivery">3. Cách xINBOX gửi Request</a></li>
+        <li><a class="toc-link" href="#sec-created">4. Payload contact_created</a></li>
+        <li><a class="toc-link" href="#sec-updated">5. Payload contact_updated</a></li>
+        <li><a class="toc-link" href="#sec-triggers">6. Khi nào Tạo &amp; Cập nhật</a></li>
+        <li><a class="toc-link" href="#sec-messages">7. Contact trong Tin nhắn</a></li>
+        <li><a class="toc-link" href="#sec-sync">8. Đồng bộ Hai chiều</a></li>
+        <li><a class="toc-link" href="#sec-company">9. Company &amp; API chi tiết</a></li>
+        <li><a class="toc-link" href="#sec-signature">10. Xác thực Chữ ký HMAC</a></li>
+        <li><a class="toc-link" href="#sec-best-practices">11. Khuyến nghị Bên nhận</a></li>
+      </ul>
+    </aside>
+
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Phần 4 / 4 — Outgoing Webhook &amp; Two-Way Contact Sync</span>
+        <h1 class="hero-title">Webhook Sự kiện Contact &amp; Company của xINBOX</h1>
+        <p class="hero-desc">
+          Dành cho đội kỹ thuật bên tích hợp. Trang này mô tả xINBOX gửi những sự kiện gì khi liên hệ (<em>contact</em>) và công ty (<em>company</em>) được tạo, cập nhật, đồng bộ hoặc nhắn tin, cấu trúc payload JSON, cơ chế đồng bộ hai chiều và cách xác thực chữ ký HMAC-SHA256.
+        </p>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <section id="sec-summary" class="doc-section" data-searchable>
+        <h2><span class="sec-num">1</span> Tóm tắt Sự kiện</h2>
+        <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px;">
+          <div class="endpoint-card" style="margin: 0;">
+            <div class="endpoint-head"><code>contact_created</code><span class="badge badge-post">Có gửi</span></div>
+            <p style="margin: 0;">Khi một liên hệ mới được tạo.</p>
+          </div>
+          <div class="endpoint-card" style="margin: 0;">
+            <div class="endpoint-head"><code>contact_updated</code><span class="badge badge-post">Có gửi</span></div>
+            <p style="margin: 0;">Khi bất kỳ trường nào của liên hệ thay đổi. Kèm danh sách trường đã đổi.</p>
+          </div>
+          <div class="endpoint-card" style="margin: 0;">
+            <div class="endpoint-head"><code>contact_deleted</code><span class="badge badge-delete">Không gửi</span></div>
+            <p style="margin: 0;">Xóa liên hệ (kể cả khi gộp liên hệ trùng) không phát webhook.</p>
+          </div>
+          <div class="endpoint-card" style="margin: 0;">
+            <div class="endpoint-head"><code>company_*</code><span class="badge badge-delete">Không gửi</span></div>
+            <p style="margin: 0;">Chưa có sự kiện nào cho company: tạo, sửa, xóa đều không phát webhook.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-register" class="doc-section" data-searchable>
+        <h2><span class="sec-num">2</span> Cách đăng ký Webhook</h2>
+        <ol>
+          <li>Admin của tài khoản xINBOX vào <strong>Cài đặt → Tích hợp → Webhooks</strong>, bấm thêm webhook mới.</li>
+          <li>Nhập URL nhận (<code>http</code>/<code>https</code>) của bên tích hợp, tick các sự kiện <code>contact_created</code> và <code>contact_updated</code>.</li>
+          <li>Sau khi tạo, xINBOX hiển thị <strong>secret</strong> của webhook. Gửi secret này cho bên tích hợp qua kênh an toàn để họ xác thực chữ ký.</li>
+        </ol>
+        <p>Webhook gắn với cả tài khoản (<em>account</em>), nên nhận sự kiện của mọi inbox trong tài khoản đó. Mỗi URL chỉ đăng ký được một lần trong một tài khoản.</p>
+      </section>
+
+      <section id="sec-delivery" class="doc-section" data-searchable>
+        <h2><span class="sec-num">3</span> Cách xINBOX gửi Request</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mục</th><th>Giá trị</th></tr></thead>
+            <tbody>
+              <tr><td>Method</td><td><span class="badge badge-post">POST</span></td></tr>
+              <tr><td>Body</td><td>JSON, UTF-8. Trường <code>event</code> cho biết loại sự kiện.</td></tr>
+              <tr><td><code>Content-Type</code></td><td><code>application/json</code></td></tr>
+              <tr><td><code>X-Chatwoot-Delivery</code></td><td>UUID riêng của mỗi lần gửi. Dùng để chống xử lý trùng.</td></tr>
+              <tr><td><code>X-Chatwoot-Timestamp</code></td><td>Unix timestamp (giây) lúc ký.</td></tr>
+              <tr><td><code>X-Chatwoot-Signature</code></td><td><code>sha256=&lt;hex&gt;</code>, là HMAC-SHA256 của chuỗi <code>"{timestamp}.{raw_body}"</code> với key là secret.</td></tr>
+              <tr><td>Thành công</td><td>Chỉ mã HTTP <code>2xx</code>. Mọi mã khác (kể cả <code>3xx</code> không theo được, <code>4xx</code>, <code>5xx</code>) đều tính là lỗi.</td></tr>
+              <tr><td>Timeout</td><td><strong>5 giây</strong> (mặc định). Quá thời gian thì coi là lỗi.</td></tr>
+              <tr><td>Retry</td><td><strong>Không retry.</strong> Nếu endpoint lỗi hoặc timeout, sự kiện đó bị bỏ qua.</td></tr>
+              <tr><td>URL nhận</td><td>Phải là địa chỉ public trên internet. xINBOX chặn gửi đến IP nội bộ / <code>localhost</code> để chống SSRF.</td></tr>
+              <tr><td>Thứ tự</td><td>Gửi bất đồng bộ qua hàng đợi, không đảm bảo đúng thứ tự.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-info">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p>Tên HTTP header giữ nguyên tiền tố <code>X-Chatwoot-</code> (<code>X-Chatwoot-Delivery</code>, <code>X-Chatwoot-Timestamp</code>, <code>X-Chatwoot-Signature</code>) để tương thích giao thức gốc phía máy chủ. Bên nhận đọc đúng các tên header này khi xác thực.</p>
+        </div>
+      </section>
+
+      <section id="sec-created" class="doc-section" data-searchable>
+        <h2><span class="sec-num">4</span> Payload <code>contact_created</code></h2>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JSON — contact_created (ví dụ minh họa)</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>{
+  "event": "contact_created",
+  "id": 4821,
+  "name": "Nguyễn Thị Lan",
+  "email": "lan.nguyen@abc.vn",
+  "phone_number": "+84901234567",
+  "identifier": null,
+  "blocked": false,
+  "avatar": "",
+  "thumbnail": "",
+  "additional_attributes": {
+    "city": "Hà Nội",
+    "country": "Vietnam",
+    "company_name": "ABC Corp",
+    "description": ""
+  },
+  "custom_attributes": {
+    "ma_khach_hang": "KH-0091"
+  },
+  "account": { "id": 12, "name": "Công ty ABC" }
+}</code></pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Trường</th><th>Kiểu</th><th>Ý nghĩa</th></tr></thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>integer</td><td>ID liên hệ trong xINBOX. Dùng làm khóa đồng bộ chính.</td></tr>
+              <tr><td><code>name</code></td><td>string</td><td>Tên hiển thị. Có thể là tên tự sinh nếu khách chat ẩn danh qua widget.</td></tr>
+              <tr><td><code>email</code></td><td>string | null</td><td>Duy nhất trong một tài khoản.</td></tr>
+              <tr><td><code>phone_number</code></td><td>string | null</td><td>Định dạng E.164, ví dụ <code>+84901234567</code>.</td></tr>
+              <tr><td><code>identifier</code></td><td>string | null</td><td>Mã định danh do hệ thống ngoài gán (qua API hoặc widget SDK). Duy nhất trong tài khoản.</td></tr>
+              <tr><td><code>blocked</code></td><td>boolean</td><td>Liên hệ có bị chặn không.</td></tr>
+              <tr><td><code>avatar</code>, <code>thumbnail</code></td><td>string</td><td>URL ảnh đại diện, chuỗi rỗng nếu không có.</td></tr>
+              <tr><td><code>additional_attributes</code></td><td>object</td><td>Thuộc tính hệ thống, không cố định khóa. Thường gặp: <code>city</code>, <code>country</code>, <code>country_code</code>, <code>company_name</code>, <code>description</code>, <code>social_profiles</code>, và các khóa <code>social_*</code> theo kênh.</td></tr>
+              <tr><td><code>custom_attributes</code></td><td>object</td><td>Thuộc tính tùy chỉnh do tài khoản tự định nghĩa. Khóa là <code>attribute_key</code> đã cấu hình.</td></tr>
+              <tr><td><code>account</code></td><td>object</td><td><code>id</code> và <code>name</code> của tài khoản xINBOX.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-updated" class="doc-section" data-searchable>
+        <h2><span class="sec-num">5</span> Payload <code>contact_updated</code></h2>
+        <p>Giống hệt <code>contact_created</code> (luôn là trạng thái <strong>mới nhất</strong> của liên hệ), cộng thêm <code>changed_attributes</code>:</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JSON — contact_updated</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>{
+  "event": "contact_updated",
+  "id": 4821,
+  "name": "Nguyễn Thị Lan",
+  "email": "lan.nguyen@abc.vn",
+  "...": "các trường khác như contact_created",
+  "changed_attributes": [
+    { "email": { "previous_value": null, "current_value": "lan.nguyen@abc.vn" } },
+    { "contact_type": { "previous_value": "visitor", "current_value": "lead" } },
+    { "updated_at": { "previous_value": "2026-11-11T08:10:02.114Z", "current_value": "2026-11-11T08:15:30.553Z" } }
+  ]
+}</code></pre>
+        </div>
+        <ul>
+          <li><code>changed_attributes</code> là <strong>mảng</strong>, mỗi phần tử là một object có đúng một khóa (tên cột) chứa <code>previous_value</code> và <code>current_value</code>.</li>
+          <li>Khóa là tên cột trong database, nên có thể xuất hiện cả các trường không có trong payload chính: <code>contact_type</code> (<code>visitor</code> / <code>lead</code> / <code>customer</code>), <code>last_name</code>, <code>middle_name</code>, <code>location</code>, <code>country_code</code>, <code>company_id</code>, <code>last_activity_at</code>, <code>updated_at</code>.</li>
+          <li>Với <code>additional_attributes</code> và <code>custom_attributes</code>, giá trị cũ và mới là <strong>toàn bộ object</strong>, không phải từng khóa con. Muốn biết khóa nào đổi thì so sánh hai object.</li>
+        </ul>
+        <div class="callout callout-warn">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <p><strong>Lưu ý — Sự kiện này phát rất thường xuyên:</strong> Mỗi khi khách gửi tin nhắn đến, xINBOX cập nhật <code>last_activity_at</code> nên <code>contact_updated</code> sẽ được gửi chỉ với <code>last_activity_at</code> và <code>updated_at</code>. Với khách chat qua widget bật tra cứu IP, ngay sau <code>contact_created</code> sẽ có thêm một <code>contact_updated</code> tự điền thành phố/quốc gia. Nếu bên nhận chỉ quan tâm thông tin liên hệ, nên bỏ qua các sự kiện mà <code>changed_attributes</code> chỉ chứa <code>last_activity_at</code> / <code>updated_at</code>.</p>
+        </div>
+      </section>
+
+      <section id="sec-triggers" class="doc-section" data-searchable>
+        <h2><span class="sec-num">6</span> Khi nào Liên hệ được Tạo &amp; Cập nhật</h2>
+
+        <h3>6.1 Khi nào liên hệ được tạo</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cách tạo</th><th>Webhook</th></tr></thead>
+            <tbody>
+              <tr><td>Nhân viên tạo trên giao diện, hoặc gọi API <code>POST /api/v1/accounts/{account_id}/contacts</code></td><td><code>contact_created</code></td></tr>
+              <tr><td>Khách nhắn lần đầu qua kênh: widget, Zalo, Facebook, Instagram, WhatsApp, WorkChat, Telegram, cuộc gọi. Khách widget ẩn danh có tên tự sinh dạng <code>fancy-moon-482</code>.</td><td><code>contact_created</code></td></tr>
+              <tr><td>Public API <code>POST /public/api/v1/inboxes/{inbox_identifier}/contacts</code> (dùng cho API channel)</td><td><code>contact_created</code></td></tr>
+              <tr><td>Import liên hệ từ file CSV (ghi hàng loạt thẳng vào DB, không qua luồng phát sự kiện).</td><td><span class="badge badge-delete">Không có</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>6.2 Khi nào liên hệ được cập nhật và đồng bộ</h3>
+        <p>xINBOX không có sự kiện "sync" riêng. Mọi thay đổi đi qua <code>contact_updated</code>, trừ một số luồng ghi thẳng vào database như bảng dưới:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tình huống</th><th>Webhook</th></tr></thead>
+            <tbody>
+              <tr><td>Sửa tên, email, SĐT, identifier, thuộc tính, chặn/bỏ chặn (giao diện hoặc API)</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Khách nhắn tin đến (<code>changed_attributes</code> chỉ gồm <code>last_activity_at</code>, <code>updated_at</code>).</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Widget gọi <code>setUser</code> để định danh khách (nếu trùng email, SĐT hoặc identifier với liên hệ khác thì hai liên hệ được gộp).</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Đồng bộ hồ sơ từ kênh: tên WhatsApp/Twilio, tên Facebook (khi tên đang trống), thuộc tính Instagram, SĐT và username WhatsApp</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Tra cứu vị trí theo IP cho khách widget (khi tài khoản bật tính năng này)</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Gán hoặc bỏ gán company bằng tay</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Gộp hai liên hệ trùng (chỉ phát cho liên hệ được giữ lại khi nhận thêm dữ liệu từ liên hệ kia; liên hệ bị gộp bị xóa mà không có sự kiện).</td><td><code>contact_updated</code></td></tr>
+              <tr><td>Đổi ảnh đại diện (kể cả ảnh đồng bộ từ kênh)</td><td><span class="badge badge-neutral">Không có</span></td></tr>
+              <tr><td>Gán hoặc bỏ nhãn (nhãn cũng không nằm trong payload).</td><td><span class="badge badge-neutral">Không có</span></td></tr>
+              <tr><td>Import CSV cập nhật liên hệ đã có</td><td><span class="badge badge-neutral">Không có</span></td></tr>
+              <tr><td>Tự gán company theo email doanh nghiệp; xóa company</td><td><span class="badge badge-neutral">Không có</span></td></tr>
+              <tr><td>Zalo Cá Nhân chỉ lấy tên và ảnh khi tạo liên hệ mới (đổi tên trên Zalo sau đó không cập nhật lại).</td><td><span class="badge badge-neutral">Không có</span></td></tr>
+              <tr><td>Xóa liên hệ (từng cái hoặc hàng loạt)</td><td><span class="badge badge-delete">Không có</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-messages" class="doc-section" data-searchable>
+        <h2><span class="sec-num">7</span> Liên hệ trong Sự kiện Tin nhắn</h2>
+        <p>Không có sự kiện riêng cho "liên hệ gửi tin". Thông tin liên hệ nằm sẵn trong các sự kiện hội thoại và tin nhắn nếu admin tick thêm các sự kiện này khi đăng ký webhook:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Sự kiện</th><th>Liên hệ nằm ở đâu</th></tr></thead>
+            <tbody>
+              <tr><td><code>message_created</code>, khách gửi</td><td><code>message_type: "incoming"</code>. <code>sender</code> là liên hệ, cùng cấu trúc payload <code>contact_created</code> (riêng chỗ này không có trường <code>type</code>).</td></tr>
+              <tr><td><code>message_created</code>, nhân viên gửi</td><td><code>message_type: "outgoing"</code>. <code>sender</code> là nhân viên (<code>type: "user"</code>) hoặc bot (<code>type: "agent_bot"</code>). Liên hệ nằm ở <code>conversation.meta.sender</code>. Ghi chú nội bộ cũng là <code>outgoing</code> nhưng có <code>private: true</code>.</td></tr>
+              <tr><td><code>conversation_created</code>, <code>conversation_updated</code>, <code>conversation_status_changed</code></td><td><code>meta.sender</code> là liên hệ, có <code>type: "contact"</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JSON — message_created (incoming)</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>{
+  "event": "message_created",
+  "id": 99120,
+  "message_type": "incoming",
+  "content": "Cho mình hỏi giá gói Pro",
+  "private": false,
+  "created_at": "2026-11-11T08:15:30.553Z",
+  "sender": {
+    "id": 4821,
+    "name": "Nguyễn Thị Lan",
+    "email": "lan.nguyen@abc.vn",
+    "phone_number": "+84901234567",
+    "identifier": null
+  },
+  "inbox": { "id": 7, "name": "Zalo OA ABC" },
+  "conversation": {
+    "id": 315,
+    "channel": "Channel::ZaloOA",
+    "status": "open",
+    "contact_inbox": { "contact_id": 4821, "inbox_id": 7, "source_id": "4410729553918204511" },
+    "meta": {
+      "sender": { "id": 4821, "name": "Nguyễn Thị Lan", "type": "contact" },
+      "assignee": null
+    }
+  },
+  "account": { "id": 12, "name": "Công ty ABC" }
+}</code></pre>
+        </div>
+        <ul>
+          <li><code>conversation.contact_inbox.source_id</code> là ID của khách trên kênh (Zalo user ID, số WhatsApp, PSID Facebook). Một liên hệ có thể có nhiều <code>source_id</code> nếu nhắn qua nhiều kênh.</li>
+          <li><code>conversation.channel</code> cho biết loại kênh (<code>Channel::ZaloOA</code>, <code>Channel::ZaloPersonal</code>, <code>Channel::WebWidget</code>, <code>Channel::FacebookPage</code>, <code>Channel::Whatsapp</code>).</li>
+          <li>Khách mới nhắn lần đầu sinh lần lượt <code>contact_created</code>, <code>conversation_created</code>, <code>message_created</code>, <code>contact_updated</code> qua hàng đợi nên <strong>thứ tự đến không được đảm bảo</strong>.</li>
+          <li>Tin dạng hoạt động (lời mời kết bạn Zalo, thông báo đổi trạng thái hội thoại) không phát <code>message_created</code>.</li>
+        </ul>
+      </section>
+
+      <section id="sec-sync" class="doc-section" data-searchable>
+        <h2><span class="sec-num">8</span> Đồng bộ Hai chiều</h2>
+        <ul>
+          <li><strong>Tránh vòng lặp:</strong> Khi bên tích hợp tạo hoặc sửa liên hệ qua API, xINBOX cũng gửi <code>contact_created</code> / <code>contact_updated</code> về lại cho chính họ. Payload không có trường cho biết ai đã thay đổi; trước khi ghi ngược vào hệ thống của mình, hãy so sánh dữ liệu và bỏ qua nếu không có gì khác.</li>
+          <li><strong>Khóa liên kết:</strong> Nên gán ID khách hàng bên tích hợp vào trường <code>identifier</code> khi tạo hoặc cập nhật liên hệ qua API (duy nhất trong một tài khoản và luôn có trong payload). Nếu chưa có <code>identifier</code>, dùng <code>id</code> của xINBOX.</li>
+          <li><strong>Đối soát định kỳ:</strong> Webhook không retry, import CSV và xóa liên hệ không phát sự kiện. Muốn dữ liệu khớp hoàn toàn thì định kỳ lấy danh sách qua <code>GET /api/v1/accounts/{account_id}/contacts</code> (có phân trang) để đối chiếu.</li>
+        </ul>
+      </section>
+
+      <section id="sec-company" class="doc-section" data-searchable>
+        <h2><span class="sec-num">9</span> Company &amp; API Lấy Chi tiết</h2>
+        <div class="callout callout-danger">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+          <p><strong>Hiện xINBOX chưa có webhook cho company:</strong> Tạo, sửa, xóa company không phát sự kiện nào, và payload contact cũng không kèm thông tin company.</p>
+        </div>
+        <ul>
+          <li><strong>Gán hoặc bỏ gán liên hệ vào company bằng tay</strong> (trên trang company, hoặc gửi <code>company_id</code> khi cập nhật liên hệ qua API) sẽ phát <code>contact_updated</code> có <code>company_id</code> trong <code>changed_attributes</code> — đây là cách duy nhất biết liên hệ thuộc company nào qua webhook.</li>
+          <li><strong>Tự động gán company theo email doanh nghiệp</strong> (VD <code>@abc.vn</code> tự tạo company "abc.vn") <strong>không</strong> phát webhook.</li>
+          <li><strong>Xóa company:</strong> các liên hệ thuộc company đó bị bỏ gán, nhưng <strong>không</strong> có <code>contact_updated</code> nào được gửi.</li>
+          <li><code>additional_attributes.company_name</code> chỉ là chuỗi tự do người dùng nhập, không liên kết với company thật.</li>
+          <li>Khi có <code>company_id</code>, gọi <span class="badge badge-get">GET</span> <code>/api/v1/accounts/{account_id}/companies/{company_id}</code> (header <code>api_access_token</code>) để lấy chi tiết trong <code>payload</code> (<code>id</code>, <code>name</code>, <code>domain</code>, <code>description</code>, <code>contacts_count</code>, <code>custom_attributes</code>, <code>avatar_url</code>, Unix timestamps). Tài khoản phải bật tính năng Companies, nếu không API trả <code>403</code>.</li>
+        </ul>
+      </section>
+
+      <section id="sec-signature" class="doc-section" data-searchable>
+        <h2><span class="sec-num">10</span> Xác thực Chữ ký (HMAC-SHA256)</h2>
+        <p>Tính HMAC trên <strong>raw body đúng như nhận được</strong>, trước khi parse JSON. Parse rồi stringify lại sẽ làm lệch chữ ký.</p>
+
+        <h3>Node.js (Express)</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JavaScript — Express Raw Body Verification</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>const crypto = require('crypto');
+const SECRET = process.env.XINBOX_WEBHOOK_SECRET;
+
+app.post('/xinbox/webhook', express.raw({ type: 'application/json' }), (req, res) =&gt; {
+  const ts = req.get('X-Chatwoot-Timestamp');
+  const sig = req.get('X-Chatwoot-Signature') || '';
+  const expected = 'sha256=' + crypto.createHmac('sha256', SECRET)
+    .update(`${ts}.${req.body}`).digest('hex');
+
+  const ok = sig.length === expected.length &amp;&amp;
+    crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  const fresh = Math.abs(Date.now() / 1000 - Number(ts)) &lt; 300;
+  if (!ok || !fresh) return res.sendStatus(401);
+
+  res.sendStatus(200);                 // trả 2xx ngay, xử lý sau
+  enqueue(JSON.parse(req.body));       // dedupe bằng X-Chatwoot-Delivery
+});</code></pre>
+        </div>
+
+        <h3>Python (Flask)</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">Python — Flask HMAC Verification</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>import hmac, hashlib, time, os
+SECRET = os.environ["XINBOX_WEBHOOK_SECRET"].encode()
+
+@app.post("/xinbox/webhook")
+def xinbox_webhook():
+    ts = request.headers.get("X-Chatwoot-Timestamp", "")
+    sig = request.headers.get("X-Chatwoot-Signature", "")
+    raw = request.get_data()
+    expected = "sha256=" + hmac.new(SECRET, ts.encode() + b"." + raw, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(sig, expected) or abs(time.time() - int(ts or 0)) &gt; 300:
+        return "", 401
+    enqueue(request.get_json())
+    return "", 200</code></pre>
+        </div>
+      </section>
+
+      <section id="sec-best-practices" class="doc-section" data-searchable>
+        <h2><span class="sec-num">11</span> Khuyến nghị cho Bên nhận</h2>
+        <ul>
+          <li>Trả HTTP <code>2xx</code> trong vòng <strong>5 giây</strong>, đưa việc xử lý nặng vào hàng đợi riêng.</li>
+          <li>Dùng <code>X-Chatwoot-Delivery</code> để bỏ qua request trùng, và dùng <code>id</code> của liên hệ để upsert.</li>
+          <li>Vì không có retry và không đảm bảo thứ tự, luôn lấy payload mới nhất làm trạng thái đúng — không nên dựng lại dữ liệu chỉ từ <code>changed_attributes</code>.</li>
+          <li>Endpoint sẽ nhận cả các sự kiện khác nếu admin tick thêm; luôn lọc theo trường <code>event</code>.</li>
+        </ul>
+        <p style="margin-top: 12px; font-size: 0.82rem; color: var(--color-text-subtle);"><em>Ghi chú phiên bản:</em> Mô tả theo mã nguồn xINBOX nhánh production ngày 11/11/2026. Nếu cần phát thêm sự kiện riêng cho company hoặc <code>contact_deleted</code>, cần bổ sung phía server xINBOX.</p>
+      </section>
+
+      <nav class="page-pager" aria-label="Điều hướng trang tiếp theo">
+        <a href="./contact-modal.html" class="pager-link">
+          <span class="pager-label">&larr; Trang trước</span>
+          <span class="pager-title">3. Modal Soạn &amp; Gửi Tin nhắn Contact</span>
+        </a>
+        <a href="./index.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Quay lại trang đầu &rarr;</span>
+          <span class="pager-title">Tổng quan Tài liệu xINBOX</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>
