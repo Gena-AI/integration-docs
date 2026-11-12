@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xINBOX Integration Docs — Kiến trúc &amp; Đặc tả Kỹ thuật</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Docs</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab is-active" aria-current="page">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Lọc nhanh tài liệu..." aria-label="Lọc nhanh nội dung" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell shell-portal">
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Platform-Agnostic Architecture &amp; Contract</span>
+        <h1 class="hero-title">Bộ Đặc tả Kỹ thuật Tích hợp xINBOX Toàn diện</h1>
+        <p class="hero-desc">
+          Tài liệu chuẩn hóa cho đội ngũ phát triển bên thứ ba tích hợp hệ sinh thái chăm sóc khách hàng đa kênh <strong>xINBOX</strong> vào bất kỳ nền tảng Web hoặc Mobile nào: từ tầng Quản trị &amp; Ánh xạ Nhân sự, Nhúng khung chat Iframe kèm giao thức <code>postMessage</code> hai chiều, đến Modal Soạn tin nhắn Đa kênh / Email / Zalo.
+        </p>
+        <div class="meta-strip">
+          <span class="meta-pill">3 Phân hệ Tích hợp Độc lập</span>
+          <span class="meta-pill">2 Khối API: xINBOX Gateway + Nội bộ Hệ thống Tích hợp</span>
+          <span class="meta-pill">Zero Framework Lock-in</span>
+        </div>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <section class="cards-grid" aria-label="Danh sách 3 tài liệu đặc tả">
+        <a href="./admin-integration.html" class="portal-card" data-searchable>
+          <div class="portal-card-head">
+            <span class="portal-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            </span>
+            <span class="badge badge-post">PHẦN 1</span>
+          </div>
+          <h3>Quản trị Tích hợp xINBOX &amp; API Nội bộ</h3>
+          <p>Mô hình 2 cổng API (xINBOX Gateway + Backend Nội bộ), bảng DB <code>user_xinbox_mappings</code>, 4 API Mapping phân quyền, quản trị Agents, Inboxes, Zalo QR Polling 3s, OAuth Popup 600x700, Labels, Canned Responses và Custom Fields.</p>
+          <div class="portal-card-footer">
+            <span>Mở đặc tả Quản trị &amp; API</span>
+            <span aria-hidden="true">&rarr;</span>
+          </div>
+        </a>
+
+        <a href="./iframe-embed.html" class="portal-card" data-searchable>
+          <div class="portal-card-head">
+            <span class="portal-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M15 4v16"/></svg>
+            </span>
+            <span class="badge badge-get">PHẦN 2</span>
+          </div>
+          <h3>Nhúng xINBOX Iframe &amp; Giao thức postMessage</h3>
+          <p>Cấu hình thẻ nhúng <code>&lt;iframe&gt;</code>, whitelist bảo mật <code>ALLOWED_ORIGINS</code>, vòng đời SSO bằng User Mapping, 4 cờ <code>brandName</code> / <code>externalViewImage</code> / <code>externalContact</code> / <code>showToggleSize</code>, hàng đợi chống Race Condition và 3 ngưỡng layout 1/2/3 cột.</p>
+          <div class="portal-card-footer">
+            <span>Mở đặc tả Nhúng Iframe</span>
+            <span aria-hidden="true">&rarr;</span>
+          </div>
+        </a>
+
+        <a href="./contact-modal.html" class="portal-card" data-searchable>
+          <div class="portal-card-head">
+            <span class="portal-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span class="badge badge-patch">PHẦN 3</span>
+          </div>
+          <h3>Modal Soạn &amp; Gửi Tin nhắn từ Contact</h3>
+          <p>Cơ chế tìm danh bạ 300ms, tra cứu SĐT Zalo Cá Nhân qua <code>contacts/lookup</code>, giải mã <code>source_id</code> tự động tại 3 thời điểm, phân loại chính sách 5 nhóm kênh, JSON / Multipart đính kèm tệp và lời mời kết bạn Zalo 150 ký tự.</p>
+          <div class="portal-card-footer">
+            <span>Mở đặc tả Modal Hội thoại</span>
+            <span aria-hidden="true">&rarr;</span>
+          </div>
+        </a>
+      </section>
+
+      <section class="doc-section" data-searchable>
+        <h2><span class="sec-num">01</span> Bức tranh Kiến trúc Tổng thể</h2>
+        <p>Hệ thống tích hợp tương tác với nền tảng xINBOX qua hai lớp song song: <strong>Kênh Quản trị &amp; Nghiệp vụ REST API</strong> (được proxy qua Gateway kèm Backend Nội bộ lưu bảng ánh xạ nhân sự) và <strong>Kênh Giao diện Nhúng Iframe</strong> giao tiếp hai chiều qua <code>window.postMessage</code>.</p>
+
+        <div class="diagram-box" role="img" aria-label="Sơ đồ kiến trúc tổng thể kết nối Host App, Backend Nội bộ, xINBOX Gateway và xINBOX Iframe">
+          <svg viewBox="0 0 920 300" width="100%" style="max-width: 920px; display: block; margin: auto; font-family: var(--font-sans);">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f6b4f" />
+              </marker>
+              <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+              </marker>
+            </defs>
+
+            <!-- Host App -->
+            <rect x="24" y="34" width="240" height="232" rx="12" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="1.5"/>
+            <rect x="24" y="34" width="240" height="36" rx="12" fill="#0f172a"/>
+            <text x="144" y="57" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">HỆ THỐNG TÍCH HỢP (HOST APP)</text>
+            <rect x="42" y="88" width="204" height="44" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
+            <text x="144" y="108" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">1. Module Quản trị Tích hợp</text>
+            <text x="144" y="124" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Mapping, Agents, Inboxes, Labels</text>
+            <rect x="42" y="146" width="204" height="44" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent-border)"/>
+            <text x="144" y="166" text-anchor="middle" fill="var(--color-accent)" font-size="12" font-weight="600">2. Container Nhúng Iframe</text>
+            <text x="144" y="182" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">SSO Init, Pending Queue, Lightbox</text>
+            <rect x="42" y="204" width="204" height="44" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
+            <text x="144" y="224" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">3. Modal Tạo Hội thoại Mới</text>
+            <text x="144" y="240" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Search Contact, Zalo Lookup, Send</text>
+
+            <!-- Middle: Internal Backend -->
+            <rect x="348" y="34" width="224" height="106" rx="12" fill="var(--color-surface)" stroke="#2563eb" stroke-width="1.5"/>
+            <text x="460" y="60" text-anchor="middle" fill="#2563eb" font-size="12.5" font-weight="700">BACKEND NỘI BỘ CHỦ</text>
+            <text x="460" y="82" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Bảng user_xinbox_mappings</text>
+            <text x="460" y="100" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">getMyMapping / upsert / delete</text>
+            <text x="460" y="118" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Danh sách Thành viên Workspace</text>
+
+            <!-- Middle: xINBOX Iframe -->
+            <rect x="348" y="160" width="224" height="106" rx="12" fill="var(--color-surface)" stroke="#0f6b4f" stroke-width="1.5"/>
+            <text x="460" y="186" text-anchor="middle" fill="#0f6b4f" font-size="12.5" font-weight="700">xINBOX IFRAME UI</text>
+            <text x="460" y="208" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Kiểm tra ALLOWED_ORIGINS</text>
+            <text x="460" y="226" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Co-branding + 1/2/3 cột Responsive</text>
+            <text x="460" y="244" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">WebSocket Realtime + ActionCable</text>
+
+            <!-- Right: xINBOX Server -->
+            <rect x="656" y="34" width="240" height="232" rx="12" fill="#0f172a"/>
+            <text x="776" y="70" text-anchor="middle" fill="#22c55e" font-size="13.5" font-weight="700">xINBOX GATEWAY &amp; ENGINE</text>
+            <line x1="680" y1="86" x2="872" y2="86" stroke="#334155" stroke-width="1"/>
+            <text x="776" y="114" text-anchor="middle" fill="#f8fafc" font-size="11.5">REST API (/api/v1/accounts/...)</text>
+            <text x="776" y="138" text-anchor="middle" fill="#94a3b8" font-size="10.5">Header: api_access_token</text>
+            <text x="776" y="166" text-anchor="middle" fill="#f8fafc" font-size="11.5">Zalo Lookup &amp; Friend Request</text>
+            <text x="776" y="190" text-anchor="middle" fill="#f8fafc" font-size="11.5">OAuth Reconnect (Google/MS/Meta)</text>
+            <text x="776" y="214" text-anchor="middle" fill="#f8fafc" font-size="11.5">Realtime ActionCable (/cable)</text>
+
+            <!-- Connectors -->
+            <path d="M 264 90 L 344 90" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow-blue)" marker-start="url(#arrow-blue)"/>
+            <text x="304" y="82" text-anchor="middle" fill="#2563eb" font-size="10" font-weight="600">Session</text>
+
+            <path d="M 264 198 L 344 198" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="304" y="190" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">postMessage</text>
+
+            <path d="M 572 213 L 652 213" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="612" y="205" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">WSS / API</text>
+
+            <path d="M 264 252 C 420 292, 540 292, 652 246" fill="none" stroke="#0f6b4f" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+            <text x="460" y="290" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">REST qua Proxy (/api-xinbox hoặc /xinbox-api)</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="doc-section" data-searchable>
+        <h2><span class="sec-num">02</span> Thứ tự Triển khai Khuyến nghị</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bước</th>
+                <th>Hạng mục</th>
+                <th>Đội phụ trách</th>
+                <th>Tài liệu chi tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-post">1</span></td>
+                <td>Dựng bảng DB <code>user_xinbox_mappings</code> &amp; 4 API Mapping nội bộ + cấu hình Proxy tới xINBOX Gateway</td>
+                <td>Backend + DevOps</td>
+                <td><a href="./admin-integration.html#sec-internal-api">Phần 1 — Mục 3.1.4</a></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-post">2</span></td>
+                <td>Đăng ký domain Staging/Prod của Host vào danh sách <code>ALLOWED_ORIGINS</code> bên xINBOX Iframe</td>
+                <td>Vận hành xINBOX</td>
+                <td><a href="./iframe-embed.html#sec-origin">Phần 2 — Mục 1.2</a></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-get">3</span></td>
+                <td>Xây Module Quản trị Tích hợp (Kết nối Admin, Ghép nối Nhân sự, Quản trị Kênh/Nhãn/Mẫu/Custom Fields)</td>
+                <td>Frontend Admin</td>
+                <td><a href="./admin-integration.html">Phần 1 — Toàn bộ</a></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-get">4</span></td>
+                <td>Nhúng <code>&lt;iframe&gt;</code> persistent + SSO <code>OMNICHANNEL_INIT_AUTH</code> + hàng đợi <code>pendingOpenAction</code></td>
+                <td>Frontend App</td>
+                <td><a href="./iframe-embed.html">Phần 2 — Toàn bộ</a></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-patch">5</span></td>
+                <td>Xây Modal Gửi tin nhắn / Email / Zalo từ CRM Contact &amp; nối sự kiện mở hội thoại sang Iframe</td>
+                <td>Frontend CRM</td>
+                <td><a href="./contact-modal.html">Phần 3 — Toàn bộ</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>

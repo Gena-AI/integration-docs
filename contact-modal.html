@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. Modal Soạn &amp; Gửi Tin nhắn Contact — xINBOX Docs</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Contact Modal Spec</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab is-active" aria-current="page">3. Modal Hội thoại</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="mobileTocBtn" class="icon-btn mobile-toc-btn" type="button" aria-expanded="false" aria-controls="tocSidebar">Mục lục</button>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Tìm kênh, Zalo, API..." aria-label="Tìm nhanh trong trang" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside id="tocSidebar" class="toc-sidebar" aria-label="Mục lục trang">
+      <p class="toc-title">Mục lục Tài liệu</p>
+      <ul class="toc-list">
+        <li><a class="toc-link is-active" href="#sec-gateway">1. Kiến trúc &amp; Headers</a></li>
+        <li><a class="toc-link" href="#sec-inputs">2. Đầu vào &amp; Luồng mở Modal</a></li>
+        <li><a class="toc-link" href="#sec-apis">3. Danh sách API Contract</a></li>
+        <li><a class="toc-link is-sub" href="#sec-zalo-lookup">3.3 Tra cứu SĐT Zalo</a></li>
+        <li><a class="toc-link is-sub" href="#sec-create-conv">3.7 Tạo Hội thoại &amp; Gửi tin</a></li>
+        <li><a class="toc-link is-sub" href="#sec-params">3.9 Chi tiết Tham số</a></li>
+        <li><a class="toc-link" href="#sec-rules">4. Quy tắc Nghiệp vụ &amp; UI</a></li>
+        <li><a class="toc-link is-sub" href="#sec-channel-matrix">4.1 Phân loại 5 nhóm kênh</a></li>
+        <li><a class="toc-link is-sub" href="#sec-auto-resolve">4.3 Tự phân giải source_id</a></li>
+        <li><a class="toc-link" href="#sec-checklist">5. Checklist Triển khai</a></li>
+      </ul>
+    </aside>
+
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Phần 3 / 3 — Multi-Channel Compose, Zalo Lookup &amp; Policy Validation</span>
+        <h1 class="hero-title">Đặc tả Kỹ thuật: Modal Soạn &amp; Gửi Tin nhắn Đa kênh / Email / Zalo từ Contact</h1>
+        <p class="hero-desc">
+          Mô tả đầy đủ kiến trúc tích hợp API, quy tắc nghiệp vụ, kiểm tra ràng buộc kênh và hành vi giao diện của <strong>Modal Tạo cuộc trò chuyện / Gửi Email &amp; Tin nhắn từ Contact</strong> (độc lập nền tảng Web/Mobile), giúp đội phát triển tự triển khai lại trên bất kỳ framework nào.
+        </p>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <section id="sec-gateway" class="doc-section" data-searchable>
+        <h2><span class="sec-num">1</span> Tổng quan Kiến trúc &amp; Xác thực</h2>
+        <p>Toàn bộ nghiệp vụ danh bạ, hộp thư, tra cứu tài khoản Zalo, gửi lời mời kết bạn Zalo, tin nhắn mẫu và tạo hội thoại đều đi qua <strong>một cổng API xINBOX duy nhất</strong> (ví dụ reverse proxy <code>/xinbox-api/</code> ➔ <code>https://xinbox-app.hub.vn</code>), không gọi sang service trung gian rời bên ngoài.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Header</th><th>Bắt buộc</th><th>Giá trị / Quy tắc</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>api_access_token</code> <em>(hoặc <code>api_key</code>)</em></td>
+                <td><span class="badge badge-required">Có</span></td>
+                <td>Truyền 1 token duy nhất: <strong>Account API Key (<code>xib_...</code>)</strong> chỉ dùng cho endpoint đúng <code>accountId</code> của key; <strong>User Access Token</strong> xác thực theo quyền user/agent.</td>
+              </tr>
+              <tr><td><code>Language</code></td><td>Khuyên dùng</td><td>Mã ngôn ngữ giao diện (<code>"vi"</code> | <code>"en"</code>).</td></tr>
+              <tr><td><code>Content-Type</code></td><td>Tùy payload</td><td><code>application/json</code> cho request thường; <code>multipart/form-data</code> (boundary tự sinh của HTTP client) khi đính kèm tệp.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-inputs" class="doc-section" data-searchable>
+        <h2><span class="sec-num">2</span> Đầu vào &amp; Luồng mở Modal</h2>
+        <h3>2.1 Tham số đầu vào của Modal</h3>
+        <ul>
+          <li><strong><code>accountId</code> (Bắt buộc — String / Number):</strong> ID của Workspace / Tài khoản xINBOX đang thao tác, định tuyến toàn bộ API <code>/api/v1/accounts/{accountId}/...</code> và tránh đẩy nhầm workspace.</li>
+          <li><strong><code>initialContact</code> (Tùy chọn — Object | <code>null</code>):</strong> Nếu truyền sẵn từ hồ sơ Contact / chi tiết Deal, Modal bỏ qua ô tìm kiếm <em>"Đến:"</em>, gán sẵn người nhận, gọi <code>/contactable_inboxes</code>, kiểm tra ràng buộc Email/SĐT và tự chọn kênh mặc định phù hợp. Nếu <code>null</code>, focus vào ô tìm kiếm <em>"Đến:"</em>.</li>
+        </ul>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JSON — Cấu trúc initialContact</span><button class="copy-btn" type="button">Copy</button></div>
+          <pre><code>{
+  "id": 456,
+  "name": "Nguyễn Văn A",
+  "phone_number": "+84912345678",
+  "email": "a@company.com",
+  "avatar_url": "https://...",
+  "preferChannel": "email",
+  "preferSubject": "Báo giá dịch vụ"
+}</code></pre>
+        </div>
+
+        <h3>2.2 Kiểm tra hội thoại cũ trước khi mở Modal</h3>
+        <p>Khi bấm nút <strong>Nhắn tin</strong> từ hồ sơ Contact: có thể gọi <code>GET /api/v1/accounts/{accountId}/contacts/{contactId}/conversations</code> kiểm tra hội thoại non-Email sẵn có (ưu tiên OTT/Direct Push &gt; Web Widget, xếp theo <code>last_activity_at</code> giảm dần). Nếu đã có hội thoại phù hợp và sản phẩm muốn nối tiếp → nhảy vào phòng chat đó; nếu chưa → mở Modal với <code>initialContact</code>. Khi bấm <strong>Gửi Email</strong>: mở thẳng Modal với <code>preferChannel = "email"</code>.</p>
+
+        <div class="diagram-box" role="img" aria-label="Sơ đồ luồng 3 bước chọn người nhận, phân giải kênh và tạo hội thoại mới">
+          <svg viewBox="0 0 880 175" width="100%" style="max-width: 880px; display: block; margin: auto; font-family: var(--font-sans);">
+            <defs>
+              <marker id="arr-cm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f6b4f"/>
+              </marker>
+            </defs>
+            <rect x="20" y="24" width="248" height="126" rx="10" fill="var(--color-surface)" stroke="#0f6b4f" stroke-width="1.5"/>
+            <text x="144" y="50" text-anchor="middle" fill="#0f6b4f" font-size="12" font-weight="700">BƯỚC 1: CHỌN NGƯỜI NHẬN</text>
+            <text x="144" y="74" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Có initialContact ➔ Bỏ qua Search</text>
+            <text x="144" y="96" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Chưa có ➔ Search danh bạ (300ms)</text>
+            <text x="144" y="118" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">10 số VN không khớp ➔ Zalo Lookup</text>
+            <text x="144" y="138" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10">Cache lookup theo phiên Modal</text>
+
+            <line x1="268" y1="87" x2="310" y2="87" stroke="#0f6b4f" stroke-width="2" marker-end="url(#arr-cm)"/>
+
+            <rect x="316" y="24" width="248" height="126" rx="10" fill="var(--color-surface)" stroke="#2563eb" stroke-width="1.5"/>
+            <text x="440" y="50" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">BƯỚC 2: CHỌN KÊNH &amp; SOURCE_ID</text>
+            <text x="440" y="74" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Lấy contactable_inboxes + Zalo Cá Nhân</text>
+            <text x="440" y="96" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Kiểm tra điều kiện 5 nhóm kênh</text>
+            <text x="440" y="118" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Disable kênh thiếu Email/SĐT/source_id</text>
+            <text x="440" y="138" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10">Auto-lookup ngầm lấy user:{uid}</text>
+
+            <line x1="564" y1="87" x2="606" y2="87" stroke="#0f6b4f" stroke-width="2" marker-end="url(#arr-cm)"/>
+
+            <rect x="612" y="24" width="248" height="126" rx="10" fill="#0f172a"/>
+            <text x="736" y="50" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="700">BƯỚC 3: GỬI &amp; HẬU XỬ LÝ</text>
+            <text x="736" y="74" text-anchor="middle" fill="#f8fafc" font-size="11">Nếu chưa có ID ➔ POST /contacts (E.164)</text>
+            <text x="736" y="96" text-anchor="middle" fill="#f8fafc" font-size="11">POST /conversations (JSON / FormData)</text>
+            <text x="736" y="118" text-anchor="middle" fill="#cbd5e1" font-size="11">(Zalo) Tùy chọn gửi kết bạn &lt;= 150 ký tự</text>
+            <text x="736" y="138" text-anchor="middle" fill="#94a3b8" font-size="10">Emit { conversation.id, accountId }</text>
+          </svg>
+        </div>
+      </section>
+
+      <section id="sec-apis" class="doc-section" data-searchable>
+        <h2><span class="sec-num">3</span> Danh sách API Contract Chi tiết</h2>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}/inboxes</span></div></div>
+          <p><strong>3.1 Lấy toàn bộ Kênh gửi của Workspace:</strong> Gọi ngay khi mở Modal; lấy mảng từ <code>response.payload</code> (hoặc root array).</p>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}/contacts/search?q=&lt;từ_khóa&gt;&amp;page=1</span></div></div>
+          <p><strong>3.2 Tìm kiếm Danh bạ:</strong> Kích hoạt khi nhập ô <em>"Đến:"</em> (debounce <strong>300ms</strong>, tối thiểu <strong>2 ký tự</strong>). Trả danh sách Contact kèm <code>contact_inboxes</code>.</p>
+        </div>
+
+        <div id="sec-zalo-lookup" class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}/zalo_channels/contacts/lookup?phone=&lt;sđt&gt;</span></div></div>
+          <p><strong>3.3 Tra cứu SĐT Zalo (Zalo Contact Lookup):</strong> Tự kích hoạt khi chuỗi là SĐT di động VN 10 số hợp lệ (regex <code>/^(0|\+?84)(3|5|7|8|9)[0-9]{8}$/</code>) mà không khớp danh bạ theo 9 số cuối và workspace có kênh Zalo, hoặc khi tự phân giải <code>source_id</code>. Hỗ trợ hủy request cũ bằng <code>AbortController</code>/<code>CancellationToken</code> và cache <code>Map&lt;phone, ZaloLookupResult&gt;</code> theo phiên Modal.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON Response 200 OK</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "ok": true,
+  "uid": "1234567890123456",
+  "displayName": "Nguyễn Văn A",
+  "avatar": "https://...",
+  "inboxId": 15,
+  "zaloAccountId": 1,
+  "phone": "0912345678",
+  "isFriend": false
+}</code></pre>
+          </div>
+          <p><strong>Mã lỗi cần map lên UI:</strong> <code>not_found_on_zalo</code> / <code>no_active_session</code>; <code>no_personal_zalo_inbox</code>; <code>personal_account_required</code> / <code>account_not_found</code>; HTTP <code>401</code>/<code>403</code>.</p>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}/contacts/{contactId}/contactable_inboxes</span></div></div>
+          <p><strong>3.4 Kênh khả dụng theo Contact:</strong> Đối chiếu với <code>contact.contact_inboxes</code> theo <code>inbox_id</code> để lấy <code>source_id</code>. Nếu Contact có <code>phone_number</code>, <strong>chủ động bổ sung tất cả inbox Zalo Cá Nhân</strong> của workspace vào danh sách chọn (dù chưa từng nhắn tới số đó).</p>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}/canned_responses</span></div></div>
+          <p><strong>3.5 Tin nhắn mẫu:</strong> Trả <code>{ id, short_code, content }</code>. Lọc client-side không phân biệt hoa/thường; khi chọn thì nối thêm <code>\n</code> nếu ô soạn đang có chữ.</p>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-post">POST</span><span class="endpoint-path">/api/v1/accounts/{accountId}/contacts</span></div></div>
+          <p><strong>3.6 Tự động tạo Contact mới (khi chọn từ Zalo Lookup chưa có <code>contact.id</code>):</strong> Chuẩn hóa <code>phone_number</code> về định dạng <strong>E.164</strong> (<code>+84...</code>) trước khi gửi <code>{ name, phone_number, avatar_url }</code>.</p>
+        </div>
+
+        <div id="sec-create-conv" class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-post">POST</span><span class="endpoint-path">/api/v1/accounts/{accountId}/conversations</span></div></div>
+          <p><strong>3.7 Tạo Hội thoại &amp; Gửi Tin nhắn / Email (API Chính):</strong></p>
+          <ul>
+            <li><strong>Trường hợp A — Không có tệp đính kèm (<code>application/json</code>):</strong> Chỉ truyền <code>mail_subject</code>, <code>additional_attributes.mail_subject</code>, <code>message.subject</code>, <code>message.cc_emails</code>, <code>message.bcc_emails</code> khi là <strong>kênh Email</strong> và có nhập giá trị.</li>
+            <li><strong>Trường hợp B — Có tệp đính kèm (<code>multipart/form-data</code>):</strong> Gửi <code>inbox_id</code>, <code>contact_id</code>, <code>source_id?</code>, <code>message[content]</code>, các trường Email <code>message[subject|cc_emails|bcc_emails]</code> + <code>mail_subject</code> (nếu kênh Email), và append từng file vào <code>files[]</code>.</li>
+          </ul>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON Body — Trường hợp A (Không đính kèm)</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "inbox_id": 15,
+  "contact_id": 456,
+  "source_id": "user:1234567890123456",
+  "mail_subject": "Báo giá dịch vụ tháng 11",
+  "additional_attributes": {
+    "mail_subject": "Báo giá dịch vụ tháng 11"
+  },
+  "message": {
+    "content": "Nội dung tin nhắn hoặc email...",
+    "subject": "Báo giá dịch vụ tháng 11",
+    "cc_emails": "cc1@domain.com, cc2@domain.com",
+    "bcc_emails": "bcc@domain.com"
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-head"><div class="endpoint-route"><span class="badge badge-post">POST</span><span class="endpoint-path">/api/v1/accounts/{accountId}/zalo_channels/contacts/{inboxId}/friend_request</span></div></div>
+          <p><strong>3.8 Gửi Lời mời Kết bạn Zalo (tùy chọn sau khi gửi tin):</strong> Truyền <code>{ uid, phone, message }</code> (<code>uid</code> cắt tiền tố <code>"user:"</code> từ <code>source_id</code>; <code>message</code> tối đa <strong>150 ký tự</strong>). Nếu lỗi chỉ ghi log cảnh báo, <strong>không</strong> đánh fail hội thoại vừa tạo.</p>
+        </div>
+
+        <h3 id="sec-params">3.9 Giải thích Chi tiết Ý nghĩa Tham số</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tham số</th><th>Bắt buộc</th><th>Dùng để làm gì &amp; Cơ chế xử lý Backend</th></tr></thead>
+            <tbody>
+              <tr><td><code>inbox_id</code></td><td><span class="badge badge-required">Có</span></td><td>Xác định kênh gửi đi (Email nào, số Zalo Cá Nhân nào, OA hay SMS).</td></tr>
+              <tr><td><code>contact_id</code></td><td><span class="badge badge-required">Có</span></td><td>Xác định hồ sơ khách hàng nhận tin để gắn lịch sử hội thoại.</td></tr>
+              <tr><td><code>source_id</code></td><td>Tùy kênh</td><td>• <strong>Zalo Cá Nhân:</strong> Nên truyền <code>"user:{uid}"</code> (bỏ trống sẽ sinh UUID ngẫu nhiên không gửi đúng nick Zalo).<br />• <strong>Zalo OA / Facebook Fanpage:</strong> Bắt buộc lấy từ <code>contactable_inboxes</code>.<br />• <strong>Email / SMS / WhatsApp:</strong> Không bắt buộc — backend tự lấy <code>email</code> / <code>phone_number</code>.</td></tr>
+              <tr><td><code>message.content</code> / <code>files[]</code></td><td>Có (1 trong 2)</td><td>Nội dung văn bản tin nhắn/email hoặc danh sách tệp nhị phân đính kèm.</td></tr>
+              <tr><td><code>mail_subject</code>, <code>message.subject</code>, <code>cc_emails</code>, <code>bcc_emails</code></td><td>Chỉ Email</td><td>Tiêu đề cấp hội thoại (hiện danh sách luồng thư + <code>Re:</code>), tiêu đề email đầu tiên qua SMTP, và danh sách CC/BCC ngăn cách bởi dấu phẩy.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-rules" class="doc-section" data-searchable>
+        <h2><span class="sec-num">4</span> Quy tắc Nghiệp vụ &amp; Hành vi Giao diện</h2>
+
+        <h3 id="sec-channel-matrix">4.1 Phân loại Kênh &amp; 4.2 Khóa lựa chọn Chính sách</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Loại kênh</th><th>Điều kiện nhận diện (lowercase)</th><th>Điều kiện hợp lệ cho phép gửi</th><th>Nhãn khi bị Disable</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Email</strong></td><td><code>channel_type</code> / <code>name</code> chứa <code>"email"</code> / <code>"mail"</code></td><td>Contact phải có <code>email</code></td><td><code>(Thiếu Email)</code></td></tr>
+              <tr><td><strong>Zalo OA</strong></td><td><code>name</code> khớp <code>/\boa\b/</code>, hoặc chứa <code>"oa"</code> / <code>"zalo"</code> ngoài nhóm Cá Nhân</td><td>Bắt buộc đã có <code>source_id</code></td><td><code>(Khách chưa nhắn OA)</code></td></tr>
+              <tr><td><strong>Facebook Fanpage</strong></td><td><code>channel_type</code> / <code>name</code> chứa <code>"facebook"</code> / <code>"fb "</code></td><td>Bắt buộc đã có <code>source_id</code></td><td><code>(Khách chưa nhắn Page)</code></td></tr>
+              <tr><td><strong>Zalo Cá Nhân</strong></td><td>Chứa <code>"zalo"</code> và <strong>không</strong> chứa <code>"oa"</code></td><td>Có <code>phone_number</code> hoặc <code>source_id</code></td><td><code>(Thiếu SĐT)</code></td></tr>
+              <tr><td><strong>SMS / Phone</strong></td><td><code>channel_type</code> chứa <code>"sms"</code> hoặc <code>"phone"</code></td><td>Có <code>phone_number</code> hoặc <code>source_id</code></td><td><code>(Thiếu SĐT)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Nếu inbox đang chọn không đủ điều kiện: hiển thị banner cảnh báo màu vàng giải thích lý do ngay dưới khung soạn thảo và khóa nút Gửi.</p>
+
+        <h3 id="sec-auto-resolve">4.3 Quy tắc Chọn kênh mặc định &amp; Tự động phân giải <code>source_id</code></h3>
+        <ul>
+          <li><strong>Chọn Contact từ danh bạ / <code>initialContact</code>:</strong> Nếu <code>preferChannel === "email"</code> hoặc chỉ có Email (không có SĐT) → chọn Email đầu tiên (+ điền <code>preferSubject</code>). Nếu có SĐT → ưu tiên Zalo Cá Nhân <strong>đã có sẵn <code>source_id</code></strong> &gt; Zalo Cá Nhân đầu tiên &gt; kênh khả dụng đầu tiên.</li>
+          <li><strong>Chọn từ Zalo Lookup:</strong> Khớp theo <code>lookupResult.inboxId</code> (fallback Zalo Cá Nhân đầu tiên), gán sẵn <code>source_id = "user:{uid}"</code> và <code>isFriend</code>.</li>
+          <li><strong>Auto-lookup <code>source_id</code> ngầm tại 3 thời điểm</strong> (khi chọn Zalo Cá Nhân chưa có <code>source_id</code> nhưng có SĐT): (1) Ngay sau khi chọn Contact; (2) Khi user đổi sang inbox Zalo Cá Nhân khác; (3) Đồng bộ <code>await</code> ngay trước khi gọi <code>POST .../conversations</code> lúc bấm Gửi.</li>
+        </ul>
+
+        <h3>4.4 Giao diện thích ứng theo Kênh &amp; Tương tác tiện ích</h3>
+        <ul>
+          <li><strong>Email vs Chat:</strong> Kênh Email hiện tiêu đề <em>"Soạn email mới"</em>, nút <em>"Gửi email"</em>, ô nhập Tiêu đề + bật/tắt CC/BCC. Chat OTT hiện <em>"Tạo cuộc trò chuyện mới"</em>, nút <em>"Gửi tin nhắn"</em>.</li>
+          <li><strong>Thanh Kết bạn Zalo (chỉ Zalo Cá Nhân):</strong> Nếu <code>isFriend === true</code> hiện badge đã là bạn bè; nếu chưa &amp; có SĐT hiện checkbox gửi lời mời kết bạn (mặc định bật) + input tối đa <strong>150 ký tự</strong> kèm bộ đếm <code>N/150</code>.</li>
+          <li><strong>Tin nhắn mẫu, Đính kèm &amp; Phím tắt:</strong> Cho phép nhiều tệp đính kèm dạng chip (<code>tên + KB</code>), validate có text <strong>hoặc</strong> &gt;= 1 tệp; hỗ trợ <code>Cmd + Enter</code> / <code>Ctrl + Enter</code>; tự động đóng 3 dropdown/popover khi click ngoài (khi tự mở dropdown do lỗi thiếu kênh cần tách khỏi event click bằng async/next-tick để click-outside không đóng ngược ngay).</li>
+          <li><strong>Sau khi Gửi thành công:</strong> Đóng Modal và phát sự kiện trả <code>{ conversation.id, accountId }</code> để màn hình cha điều hướng mở đúng phòng chat.</li>
+        </ul>
+      </section>
+
+      <section id="sec-checklist" class="doc-section" data-searchable>
+        <h2><span class="sec-num">5</span> Checklist Triển khai cho Hệ thống Độc lập</h2>
+        <ol>
+          <li>Cấu hình Base URL cổng xINBOX + đính kèm 1 header xác thực (<code>api_access_token</code> hoặc <code>api_key</code>) + <code>Language</code>.</li>
+          <li>Quản lý độc lập các state Modal: <code>selectedContact</code>, <code>allInboxes</code>, <code>contactableInboxes</code>, <code>selectedInboxId</code>, <code>selectedSourceId</code>, Email fields, Zalo Lookup &amp; Friend state, <code>messageContent</code>, <code>attachedFiles</code>, <code>cannedResponses</code>.</li>
+          <li>Áp dụng đúng Validation Matrix cho 5 nhóm kênh tránh gọi API lỗi do chính sách nền tảng.</li>
+          <li>Hủy request lookup cũ (<code>AbortController</code>) khi user đổi SĐT nhanh và dọn cache/dropdown khi đóng Modal.</li>
+        </ol>
+      </section>
+
+      <nav class="page-pager" aria-label="Điều hướng trang tiếp theo">
+        <a href="./iframe-embed.html" class="pager-link">
+          <span class="pager-label">&larr; Trang trước</span>
+          <span class="pager-title">2. Nhúng xINBOX Iframe &amp; postMessage</span>
+        </a>
+        <a href="./index.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Quay lại trang đầu &rarr;</span>
+          <span class="pager-title">Tổng quan Tài liệu xINBOX</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>

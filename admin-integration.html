@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Quản trị Tích hợp xINBOX &amp; API Nội bộ — xINBOX Docs</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Admin &amp; API Spec</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab is-active" aria-current="page">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="mobileTocBtn" class="icon-btn mobile-toc-btn" type="button" aria-expanded="false" aria-controls="tocSidebar">Mục lục</button>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Tìm endpoint, bảng, lỗi..." aria-label="Tìm nhanh trong trang" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside id="tocSidebar" class="toc-sidebar" aria-label="Mục lục trang">
+      <p class="toc-title">Mục lục Tài liệu</p>
+      <ul class="toc-list">
+        <li><a class="toc-link is-active" href="#sec-arch">1. Kiến trúc &amp; Xác thực</a></li>
+        <li><a class="toc-link" href="#sec-lifecycle">2. Ngữ cảnh &amp; 5 Luồng Kết nối</a></li>
+        <li><a class="toc-link" href="#sec-contracts">3. Hợp đồng API Chi tiết</a></li>
+        <li><a class="toc-link is-sub" href="#sec-group-a">3.1 Nhóm A: Auth &amp; Profile</a></li>
+        <li><a class="toc-link is-sub" href="#sec-internal-api">3.1.4 DB &amp; API Mapping Nội bộ</a></li>
+        <li><a class="toc-link is-sub" href="#sec-group-b">3.2 Nhóm B: Agents</a></li>
+        <li><a class="toc-link is-sub" href="#sec-group-c">3.3 Nhóm C: Inboxes &amp; OAuth</a></li>
+        <li><a class="toc-link is-sub" href="#sec-group-d">3.4 Nhóm D: Labels &amp; Categories</a></li>
+        <li><a class="toc-link is-sub" href="#sec-group-ef">3.5–3.6 Canned &amp; Custom Fields</a></li>
+        <li><a class="toc-link is-sub" href="#sec-param-guide">3.7 Giải thích Tham số</a></li>
+        <li><a class="toc-link" href="#sec-rules">4. Quy tắc, Polling &amp; Lỗi</a></li>
+        <li><a class="toc-link" href="#sec-checklist">5. Checklist Triển khai</a></li>
+      </ul>
+    </aside>
+
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Phần 1 / 3 — Multi-Gateway API, User Mapping DB &amp; Admin Governance</span>
+        <h1 class="hero-title">Đặc tả Kiến trúc &amp; API: Module Quản trị Tích hợp xINBOX</h1>
+        <p class="hero-desc">
+          Mô tả đầy đủ kiến trúc 2 khối Backend (xINBOX Gateway + API Nội bộ Hệ thống Tích hợp), cơ chế xác thực, vòng đời trạng thái kết nối, hợp đồng HTTP/JSON chi tiết, schema bảng Mapping, quy tắc nghiệp vụ và hành vi giao diện của Module Quản trị Tích hợp xINBOX.
+        </p>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <section id="sec-arch" class="doc-section" data-searchable>
+        <h2><span class="sec-num">1</span> Tổng quan Kiến trúc &amp; Xác thực</h2>
+
+        <h3>1.1 Mô hình Kiến trúc Hai Khối (xINBOX Gateway + API Nội bộ Hệ thống Tích hợp)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Khối API</th>
+                <th>Chủ sở hữu</th>
+                <th>Vai trò nghiệp vụ</th>
+                <th>Ví dụ Prefix / Gateway</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. xINBOX Gateway API</strong> <em>(Chuẩn cố định)</em></td>
+                <td><strong>xINBOX Server</strong></td>
+                <td>Xác thực phiên xINBOX, lấy danh sách Workspace/Account &amp; hạn mức gói, quản trị Agent, Kênh chat (<em>Inboxes</em>), Nhãn &amp; Nhóm nhãn, Tin nhắn mẫu, Trường tùy chỉnh và Kết nối lại kênh</td>
+                <td><code>/api-xinbox</code> ➔ xINBOX Server</td>
+              </tr>
+              <tr>
+                <td><strong>2. API Nội bộ Hệ thống Tích hợp</strong> <em>(Đội Dev tự xây)</em></td>
+                <td><strong>Backend Hệ thống Tích hợp</strong></td>
+                <td>Gồm 2 dịch vụ nội bộ: (1) Trả danh sách thành viên Workspace; (2) Lưu bảng ánh xạ 1-1 giữa nhân sự nội bộ và Agent xINBOX (kèm token phiên kết nối)</td>
+                <td>Nội bộ (VD <code>/api-core</code>, <code>/api-internal</code>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-info">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p><strong>Hạ tầng Reverse Proxy:</strong> Nếu Frontend gọi qua proxy cùng domain để tránh CORS, cấu hình timeout tối thiểu <code>60s</code>, giới hạn payload tối đa <code>50MB</code>, và kiểm tra origin/referer hợp lệ cho gateway <code>/api-xinbox/</code>.</p>
+        </div>
+
+        <h3>1.2 Authentication &amp; Headers</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Header (Cổng xINBOX)</th>
+                <th>Bắt buộc</th>
+                <th>Giá trị / Quy tắc xử lý phía Backend</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>api_access_token</code> <em>(hoặc <code>api_key</code>)</em></td>
+                <td><span class="badge badge-required">Có (trừ sign_in)</span></td>
+                <td>
+                  Truyền <strong>1 token duy nhất</strong>:<br />
+                  • <strong>Account API Key (tiền tố <code>xib_...</code>):</strong> Chỉ dùng cho endpoint <code>/api/v1/accounts/{accountId}/...</code> khớp đúng workspace cấp key. Gọi <code>/api/v1/profile</code> hoặc workspace khác sẽ trả <code>401 Unauthorized</code>.<br />
+                  • <strong>User Access Token (không tiền tố <code>xib_</code>):</strong> <strong>Bắt buộc dùng</strong> cho màn hình Quản trị Tích hợp để gọi <code>/api/v1/profile</code>, liệt kê toàn bộ Account, kiểm tra quyền <code>administrator</code> và chuyển qua lại giữa các Workspace.
+                </td>
+              </tr>
+              <tr>
+                <td><code>Content-Type</code></td>
+                <td><span class="badge badge-required">Có</span></td>
+                <td><code>application/json</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Với API Nội bộ của Hệ thống Tích hợp:</strong> Dùng sẵn cơ chế phiên đăng nhập của hệ thống tích hợp (<code>Authorization: Bearer &lt;session_token&gt;</code> hoặc Cookie/Session), kiểm tra caller là thành viên / Admin hợp lệ trước khi đọc ghi User Mapping.</p>
+      </section>
+
+      <section id="sec-lifecycle" class="doc-section" data-searchable>
+        <h2><span class="sec-num">2</span> Đầu vào Ngữ cảnh &amp; 5 Luồng Kết nối Chính</h2>
+
+        <h3>2.1 Tham số Ngữ cảnh Đầu vào</h3>
+        <ol>
+          <li><strong><code>currentWorkspaceId</code> (Number — Bắt buộc):</strong> ID Workspace hiện hành trên hệ thống tích hợp để cô lập dữ liệu mapping &amp; lựa chọn Account cục bộ.
+            <div class="callout callout-info">
+              <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <p><strong>Hệ thống không chia Workspace:</strong> xINBOX chạy nghiệp vụ theo <code>selectedAccountId</code>, không dùng <code>currentWorkspaceId</code>. Hệ thống <strong>Single-tenant</strong> có thể gán cố định <code>currentWorkspaceId = 1</code> <em>(hoặc <code>0</code>)</em>, hoặc bỏ hẳn cột <code>workspace_id</code> trong DB nội bộ và khóa duy nhất theo <code>host_user_id</code>. Nếu chia theo Công ty/Chi nhánh, map vào <code>companyId</code> / <code>organizationId</code>.</p>
+            </div>
+          </li>
+          <li><strong><code>currentUserId</code> (Number — Bắt buộc):</strong> ID quản trị viên đang đăng nhập hệ thống tích hợp — đối chiếu quyền sở hữu bản ghi User Mapping.</li>
+          <li><strong><code>selectedAccountId</code> (Number — Động):</strong> ID Workspace/Account bên phía xINBOX, định tuyến toàn bộ API <code>/api/v1/accounts/{accountId}/...</code>, lưu local theo khóa <code>__xinbox_account_{currentWorkspaceId}</code>.</li>
+        </ol>
+
+        <h3>2.2 Vòng đời Trạng thái &amp; 5 Luồng Vận hành</h3>
+        <ul>
+          <li><strong>Luồng 1 — Card Tổng quan Tích hợp:</strong> Gọi <code>listWorkspaceMappings</code> → đếm <code>mappedCount</code> các nhân sự có Agent ID hợp lệ → tìm mapping của <code>currentUserId</code>; trạng thái <strong>Đang hoạt động</strong> khi có mapping + Agent ID hợp lệ + <code>isEnabled !== false</code>.</li>
+          <li><strong>Luồng 2 — Khởi tạo Trang Chi tiết (<code>checkInitialConnection</code>):</strong> Reset state → gọi <code>getMyMapping</code> → kiểm tra đủ <strong>4 điều kiện</strong> (có dữ liệu; <code>hostUserId == currentUserId</code>; <code>xinboxAgentId &gt; 0</code>; <code>token</code> khác rỗng). Khi đạt: gọi <code>GET /api/v1/profile</code>, khôi phục <code>selectedAccountId</code>, tải song song 5 nhóm (Account detail, Ghép nối nhân sự, Inboxes, Labels, Canned Responses) và lazy-load <code>inbox_members</code> / <code>custom_attribute_definitions</code> theo Tab.</li>
+          <li><strong>Luồng 3 — Kết nối Mới / Đăng nhập lại:</strong> Hỗ trợ <strong>Email + Mật khẩu</strong> (<code>POST /auth/sign_in</code>) hoặc <strong>User Access Token</strong> (<code>GET /api/v1/profile</code>). Kiểm tra bắt buộc <code>accounts[]</code> có ít nhất 1 Workspace giữ role <code>"administrator"</code>/<code>"admin"</code>; nếu thiếu quyền Admin → cảnh báo và dừng, không lưu mapping. Lưu xong chọn Account admin đầu tiên và tải dữ liệu.</li>
+          <li><strong>Luồng 4 — Đổi Workspace xINBOX (<code>selectedAccountId</code>):</strong> Lưu local storage <code>__xinbox_account_{currentWorkspaceId}</code> → tải song song Account detail, Agents, Inboxes, Labels, Canned Responses (+ Custom Fields cả 3 scope nếu đang mở Tab).</li>
+          <li><strong>Luồng 5 — Ngắt kết nối Toàn bộ (Disconnect):</strong> Mở Modal xác nhận mã bảo mật <strong>6 chữ số ngẫu nhiên</strong> (<code>100000–999999</code>) → gọi <code>deleteUserMapping</code> cho <code>currentUserId</code> → xóa khóa local storage → reset <code>isConnected = false</code>.</li>
+        </ul>
+      </section>
+
+      <section id="sec-contracts" class="doc-section">
+        <h2><span class="sec-num">3</span> Danh sách API Contract Chi tiết</h2>
+        <p><strong>Nhóm 3.1.1–3.1.3 &amp; 3.2–3.6</strong> là API chuẩn cố định của xINBOX Server qua <code>/api-xinbox</code>. <strong>Mục 3.1.4</strong> là thiết kế tham chiếu cho Backend Nội bộ Hệ thống Tích hợp.</p>
+
+        <div class="filter-bar" data-filter-group="api-groups">
+          <button class="filter-pill is-active" type="button" data-filter-val="all">Tất cả (A–F)</button>
+          <button class="filter-pill" type="button" data-filter-val="ga">A. Auth &amp; Mapping</button>
+          <button class="filter-pill" type="button" data-filter-val="gb">B. Agents</button>
+          <button class="filter-pill" type="button" data-filter-val="gc">C. Inboxes &amp; OAuth</button>
+          <button class="filter-pill" type="button" data-filter-val="gd">D. Labels</button>
+          <button class="filter-pill" type="button" data-filter-val="gef">E–F. Canned &amp; Custom Fields</button>
+        </div>
+
+        <div id="sec-group-a" data-searchable data-filter-item="api-groups" data-filter-cat="ga">
+          <h3>3.1 Nhóm A — Xác thực xINBOX, Profile, Account &amp; Thiết kế API Mapping Nội bộ</h3>
+
+          <div class="endpoint-card">
+            <div class="endpoint-head">
+              <div class="endpoint-route"><span class="badge badge-post">POST</span><span class="endpoint-path">/auth/sign_in</span></div>
+              <span class="badge badge-neutral">Không cần Token</span>
+            </div>
+            <p>Đăng nhập xINBOX bằng Email &amp; Mật khẩu. Trả <code>id</code>, <code>access_token</code> (hoặc header <code>access-token</code> / <code>api_access_token</code>), <code>pubsub_token</code>, <code>email</code>, <code>name</code>. HTTP <code>401</code> báo sai thông tin.</p>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">JSON Request Body</span><button class="copy-btn" type="button">Copy</button></div>
+              <pre><code>{
+  "email": "admin@company.com",
+  "password": "••••••••"
+}</code></pre>
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-head">
+              <div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/profile</span></div>
+              <span class="badge badge-required">User Access Token</span>
+            </div>
+            <p>Lấy thông tin tài khoản và toàn bộ <code>accounts[]</code> cùng <code>role</code> và <code>limits</code> (Key <code>xib_...</code> bị từ chối <code>401</code>). Chuẩn hóa hạn mức: <code>limits.agents</code> ưu tiên <code>a.limits?.agents</code> → <code>custom_attributes.subscribed_quantity</code> → <code>agents_limit</code> → <code>agent_limit</code> → <code>quantity</code>; tương tự <code>limits.inboxes</code> → <code>inboxes_limit</code> → <code>inbox_limit</code>.</p>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">JSON Response 200 OK</span><button class="copy-btn" type="button">Copy</button></div>
+              <pre><code>{
+  "id": 12,
+  "name": "Nguyễn Văn Admin",
+  "email": "admin@company.com",
+  "pubsub_token": "ps_xxx",
+  "accounts": [
+    {
+      "id": 5,
+      "name": "Công ty ABC",
+      "role": "administrator",
+      "limits": { "agents": 10, "inboxes": 5 },
+      "custom_attributes": { "subscribed_quantity": 10, "inboxes_limit": 5 }
+    }
+  ]
+}</code></pre>
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-head">
+              <div class="endpoint-route"><span class="badge badge-get">GET</span><span class="endpoint-path">/api/v1/accounts/{accountId}</span></div>
+            </div>
+            <p>Lấy chi tiết Workspace &amp; hạn mức mới nhất (<code>payload || data || root</code>) khi vừa nâng gói hoặc đổi <code>accountId</code>.</p>
+          </div>
+
+          <h4 id="sec-internal-api">3.1.4 Đặc tả Thiết kế Backend Nội bộ Hệ thống Tích hợp (Thành viên &amp; User Mapping)</h4>
+          <p><strong>A. API Lấy Danh sách Thành viên Workspace:</strong> Input tối thiểu <code>workspaceId</code> → Output tối thiểu <code>{ userId, fullName, userName, email, avatar, roleId }</code>.</p>
+          <p><strong>B. Bảng DB Lưu Ánh xạ (<code>user_xinbox_mappings</code>)</strong> — Unique Constraint: <code>(workspace_id, host_user_id)</code>:</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Tên cột đề xuất</th><th>Kiểu dữ liệu</th><th>Bắt buộc</th><th>Mục đích sử dụng</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>workspace_id</code></td><td>Integer / UUID</td><td>Có</td><td>ID Workspace trên hệ thống tích hợp (cô lập multi-tenant).</td></tr>
+                <tr><td><code>host_user_id</code></td><td>Integer / UUID</td><td>Có</td><td>ID thành viên trên hệ thống tích hợp (<code>TargetUserId</code>).</td></tr>
+                <tr><td><code>xinbox_agent_id</code></td><td>Integer</td><td>Có</td><td>ID Agent tương ứng bên xINBOX.</td></tr>
+                <tr><td><code>xinbox_token</code></td><td>String <em>(Encrypted)</em></td><td>Tùy ngữ cảnh</td><td>User Access Token xINBOX. Bắt buộc khi Admin tự kết nối; có thể rỗng khi Admin map hộ nhân viên (lúc login iframe lần đầu sẽ gọi update lưu bù).</td></tr>
+                <tr><td><code>xinbox_pubsub_token</code></td><td>String</td><td>Không</td><td>Token kết nối kênh realtime PubSub xINBOX.</td></tr>
+                <tr><td><code>is_enabled</code></td><td>Boolean</td><td>Có</td><td>Cờ bật/tắt hiệu lực liên kết (mặc định <code>true</code>).</td></tr>
+                <tr><td><code>created_at</code>, <code>updated_at</code></td><td>Datetime / Unix</td><td>Có</td><td>Thời điểm tạo &amp; cập nhật gần nhất.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>C. 4 API Mapping Nội bộ &amp; Quy tắc Phân quyền:</strong></p>
+          <ol>
+            <li><strong><code>getMyMapping</code>:</strong> Input <code>{ workspaceId }</code> (user từ session). Quyền: thành viên hợp lệ của <code>workspaceId</code>. Output: <code>{ workspaceId, hostUserId, xinboxAgentId, token, pubSubToken, isEnabled }</code> hoặc <code>null</code>.</li>
+            <li><strong><code>listWorkspaceMappings</code>:</strong> Input <code>{ workspaceId }</code>. Quyền: <strong>Admin</strong> của <code>workspaceId</code>. Output mảng <code>{ workspaceId, hostUserId, xinboxAgentId, isEnabled, createdAt, updatedAt }</code> — <strong>tuyệt đối KHÔNG trả <code>token</code> và <code>pubSubToken</code></strong> của nhân sự khác.</li>
+            <li><strong><code>createUserMapping</code> / <code>updateUserMapping</code> (hoặc <code>upsertMapping</code>):</strong> Input <code>{ workspaceId, targetUserId, xinboxAgentId, token?, pubSubToken?, isEnabled }</code>. Quyền: <code>targetUserId</code> thuộc workspace; nếu <code>targetUserId !== currentUserId</code> bắt buộc caller là <strong>Admin</strong>. Upsert theo <code>(workspace_id, targetUserId)</code>.</li>
+            <li><strong><code>deleteUserMapping</code>:</strong> Input <code>{ workspaceId, deletedUserId }</code>. Quyền: nếu <code>deletedUserId !== currentUserId</code> bắt buộc caller là <strong>Admin</strong>. Xóa bản ghi khỏi DB.</li>
+          </ol>
+        </div>
+
+        <div id="sec-group-b" data-searchable data-filter-item="api-groups" data-filter-cat="gb">
+          <h3>3.2 Nhóm B — Quản trị Nhân viên xINBOX (Agents)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nghiệp vụ</th><th>Method &amp; Endpoint</th><th>Payload / Lưu ý</th></tr></thead>
+              <tbody>
+                <tr><td>Danh sách Agent</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/agents</code></td><td>Chuẩn hóa: <code>id</code>, <code>name</code>, <code>email</code>, <code>role</code> (<code>administrator</code>|<code>agent</code>), <code>avatarUrl</code>, <code>availabilityStatus</code>, <code>confirmed</code>, <code>is_owner</code>.</td></tr>
+                <tr><td>Kiểm tra Email trùng</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/agents/check_email?email=...</code></td><td><code>{ exists, in_current_account, name }</code>. Nếu <code>exists &amp;&amp; !in_current_account</code>: ẩn nhập mật khẩu/<code>skip_confirmation</code>, đổi nút <em>"Thêm Agent có sẵn"</em>.</td></tr>
+                <tr><td>Tạo / Thêm Agent</td><td><span class="badge badge-post">POST</span> <code>/api/v1/accounts/{accountId}/agents</code></td><td><code>{ name, email, role, skip_confirmation?, password? }</code> (chỉ truyền <code>skip_confirmation: true</code> &amp; <code>password</code> khi user mới &amp; bật kích hoạt ngay).</td></tr>
+                <tr><td>Sửa Tên / Vai trò</td><td><span class="badge badge-patch">PATCH</span> <code>/api/v1/accounts/{accountId}/agents/{agentId}</code></td><td><code>{ name, role }</code> <em>(tùy chọn <code>availability</code>, <code>auto_offline</code>)</em>.</td></tr>
+                <tr><td>Đặt lại Mật khẩu</td><td><span class="badge badge-patch">PATCH</span> <code>/api/v1/accounts/{accountId}/agents/{agentId}/reset_password</code></td><td><code>{ "mode": "manual", "password": "..." }</code>.</td></tr>
+                <tr><td>Chuyển Chủ Workspace</td><td><span class="badge badge-patch">PATCH</span> <code>/api/v1/accounts/{accountId}/agents/{agentId}/transfer_ownership</code></td><td>Body <code>{}</code>. Cập nhật <code>is_owner = true</code> cho Agent chọn.</td></tr>
+                <tr><td>Xóa Agent</td><td><span class="badge badge-delete">DELETE</span> <code>/api/v1/accounts/{accountId}/agents/{agentId}</code></td><td>Nếu Agent đang gắn với thành viên trong <code>members[]</code>, tự động gọi thêm <code>deleteUserMapping</code> tránh mapping mồ côi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="sec-group-c" data-searchable data-filter-item="api-groups" data-filter-cat="gc">
+          <h3>3.3 Nhóm C — Quản lý Kênh chat (Inboxes), Phân quyền &amp; Kết nối lại Kênh</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nghiệp vụ</th><th>Method &amp; Endpoint</th><th>Body / Response trọng tâm</th></tr></thead>
+              <tbody>
+                <tr><td>Danh sách Kênh</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/inboxes</code></td><td>Trả <code>id, name, channel_type, avatar_url, email, website_url, reauthorization_required, provider, imap_enabled, imap_login, smtp_enabled, smtp_login</code>.</td></tr>
+                <tr><td>Thành viên trên Kênh</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/inbox_members/{inboxId}</code></td><td>Trích xuất mảng ID số <code>member_ids: number[]</code>.</td></tr>
+                <tr><td>Cập nhật Thành viên Kênh</td><td><span class="badge badge-patch">PATCH</span> <code>/api/v1/accounts/{accountId}/inbox_members</code></td><td><code>{ "inbox_id": 15, "user_ids": [3, 7, 12] }</code>.</td></tr>
+                <tr><td>Zalo QR Code</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/zalo_channels/reconnect/{inboxId}/qr</code></td><td><code>{ "qr_image_base64": "data:image/png;base64,...", "status": "pending_qr" }</code>.</td></tr>
+                <tr><td>Zalo QR Polling Status</td><td><span class="badge badge-get">GET</span> <code>/api/v1/accounts/{accountId}/zalo_channels/reconnect/{inboxId}/status</code></td><td><code>status</code>: <code>pending_qr</code> | <code>connected</code> | <code>expired</code> | <code>logged_out</code> | <code>error</code>.</td></tr>
+                <tr><td>Email OAuth URL</td><td><span class="badge badge-post">POST</span> <code>/api/v1/accounts/{accountId}/google|microsoft/authorization</code></td><td>Body <code>{ "email": "support@company.com" }</code> → trả <code>{ "url": "..." }</code> mở popup <code>600x700</code>.</td></tr>
+                <tr><td>Email IMAP/SMTP thủ công</td><td><span class="badge badge-patch">PATCH</span> <code>/api/v1/accounts/{accountId}/inboxes/{inboxId}</code></td><td><code>{ "channel": { imap_login, imap_password, smtp_login, smtp_password } }</code>.</td></tr>
+                <tr><td>Social OAuth (IG/TikTok/WA)</td><td><span class="badge badge-post">POST</span> <code>/api/v1/accounts/{accountId}/instagram|tiktok|whatsapp/authorization</code></td><td>Body <code>{}</code> → trả <code>{ "url": "..." }</code> mở popup OAuth <code>600x700</code>.</td></tr>
+                <tr><td>Facebook Fanpage Callback</td><td><span class="badge badge-post">POST</span> <code>/api/v1/callbacks/reauthorize_page</code> <em>(cấp hệ thống)</em></td><td><code>{ "inbox_id": 15, "omniauth_token": "..." }</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Sơ đồ Tuần tự: Luồng OAuth Popup Tái ủy quyền Kênh (Email / MXH)</h4>
+          <div class="diagram-box" role="img" aria-label="Sơ đồ tuần tự luồng OAuth Popup 600x700 tái ủy quyền kênh Email và Mạng xã hội">
+            <svg viewBox="0 0 880 330" width="100%" style="max-width: 880px; display: block; margin: auto; font-family: var(--font-sans);">
+              <defs>
+                <marker id="arr-oa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f6b4f"/>
+                </marker>
+                <marker id="arr-oa-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="24" y="14" width="160" height="34" rx="8" fill="#0f172a"/><text x="104" y="36" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">Admin App (Host)</text>
+              <rect x="244" y="14" width="160" height="34" rx="8" fill="#0f6b4f"/><text x="324" y="36" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">xINBOX Gateway</text>
+              <rect x="464" y="14" width="170" height="34" rx="8" fill="#1e293b"/><text x="549" y="36" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">OAuth Popup (600x700)</text>
+              <rect x="694" y="14" width="165" height="34" rx="8" fill="#0f172a"/><text x="776" y="36" text-anchor="middle" fill="#22c55e" font-size="11.5" font-weight="700">OAuth Provider</text>
+
+              <line x1="104" y1="48" x2="104" y2="314" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+              <line x1="324" y1="48" x2="324" y2="314" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+              <line x1="549" y1="48" x2="549" y2="314" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+              <line x1="776" y1="48" x2="776" y2="314" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+
+              <line x1="104" y1="74" x2="319" y2="74" stroke="#0f6b4f" stroke-width="1.6" marker-end="url(#arr-oa)"/>
+              <text x="211" y="68" text-anchor="middle" fill="var(--color-text)" font-size="10.5">1. POST /accounts/{accountId}/{provider}/authorization</text>
+              <line x1="324" y1="100" x2="109" y2="100" stroke="#0f6b4f" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arr-oa)"/>
+              <text x="216" y="94" text-anchor="middle" fill="#0f6b4f" font-size="10.5">2. 200 OK { "url": "https://provider.oauth/authorize?..." }</text>
+              <line x1="104" y1="128" x2="544" y2="128" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-oa-s)"/>
+              <text x="324" y="122" text-anchor="middle" fill="var(--color-text)" font-size="10.5">3. window.open(url, "oauth_popup", "width=600,height=700")</text>
+              <line x1="549" y1="156" x2="771" y2="156" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-oa-s)"/>
+              <text x="660" y="150" text-anchor="middle" fill="var(--color-text)" font-size="10.5">4. Đăng nhập &amp; Admin cấp quyền truy cập Inbox</text>
+              <line x1="776" y1="184" x2="554" y2="184" stroke="#0f6b4f" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arr-oa)"/>
+              <text x="665" y="178" text-anchor="middle" fill="#0f6b4f" font-size="10.5">5. Redirect Callback kèm authorization code</text>
+              <line x1="549" y1="212" x2="329" y2="212" stroke="#0f6b4f" stroke-width="1.6" marker-end="url(#arr-oa)"/>
+              <text x="439" y="206" text-anchor="middle" fill="var(--color-text)" font-size="10.5">6. Đổi OAuth Token &amp; cập nhật Inbox</text>
+              <line x1="549" y1="242" x2="109" y2="242" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arr-oa-s)"/>
+              <text x="329" y="236" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">7. Đóng popup / quay về cửa sổ Admin</text>
+              <line x1="104" y1="272" x2="319" y2="272" stroke="#0f6b4f" stroke-width="1.6" marker-end="url(#arr-oa)"/>
+              <text x="211" y="266" text-anchor="middle" fill="var(--color-text)" font-size="10.5">8. GET /api/v1/accounts/{accountId}/inboxes</text>
+              <line x1="324" y1="298" x2="109" y2="298" stroke="#0f6b4f" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arr-oa)"/>
+              <text x="216" y="292" text-anchor="middle" fill="#0f6b4f" font-size="10.5">9. Inboxes (reauthorization_required = false)</text>
+            </svg>
+          </div>
+        </div>
+
+        <div id="sec-group-d" data-searchable data-filter-item="api-groups" data-filter-cat="gd">
+          <h3>3.4 Nhóm D — Quản lý Nhãn Hội thoại (Labels) &amp; Nhóm Danh mục Nhãn</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nghiệp vụ</th><th>Method &amp; Endpoint</th><th>Body (JSON) / Quy tắc</th></tr></thead>
+              <tbody>
+                <tr><td>CRUD Nhãn</td><td><span class="badge badge-get">GET</span> <span class="badge badge-post">POST</span> <span class="badge badge-patch">PATCH</span> <span class="badge badge-delete">DELETE</span> <code>/api/v1/accounts/{accountId}/labels/{labelId?}</code></td><td><code>{ title, description, color, show_on_sidebar, label_category_ids }</code></td></tr>
+                <tr><td>Sắp xếp thứ tự Nhãn</td><td><span class="badge badge-post">POST</span> <code>/api/v1/accounts/{accountId}/labels/reorder</code></td><td><code>{ "positions_hash": { "12": 0, "15": 1, "9": 2 } }</code></td></tr>
+                <tr><td>CRUD Nhóm Nhãn</td><td><span class="badge badge-get">GET</span> <span class="badge badge-post">POST</span> <span class="badge badge-patch">PATCH</span> <span class="badge badge-delete">DELETE</span> <code>/api/v1/accounts/{accountId}/label_categories/{categoryId?}</code></td><td><code>{ "label_category": { "name": "CSKH", "color": "#10B981" } }</code>. Cấm xóa nhóm <code>"Chung"</code>; xóa nhóm khác backend chuyển nhãn về <code>"Chung"</code>.</td></tr>
+                <tr><td>Gán / Gỡ hàng loạt</td><td><span class="badge badge-post">POST</span> <code>/api/v1/accounts/{accountId}/label_categories/bulk_assign|unassign</code></td><td><code>{ "label_category_id": 4, "label_ids": [10, 11, 12] }</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="sec-group-ef" data-searchable data-filter-item="api-groups" data-filter-cat="gef">
+          <h3>3.5 Nhóm E — Mẫu Tin nhắn Nhanh (Canned Responses)</h3>
+          <p><span class="badge badge-get">GET</span> <span class="badge badge-post">POST</span> <span class="badge badge-patch">PATCH</span> <span class="badge badge-delete">DELETE</span> <code>/api/v1/accounts/{accountId}/canned_responses/{id?}</code> — Body: <code>{ "short_code": "chao_khach", "content": "..." }</code>.</p>
+
+          <h3>3.6 Nhóm F — Trường Tùy chỉnh (Custom Attribute Definitions)</h3>
+          <p><span class="badge badge-get">GET</span> (kèm query <code>?attribute_model=0|1|2</code>) · <span class="badge badge-post">POST</span> · <span class="badge badge-patch">PATCH</span> · <span class="badge badge-delete">DELETE</span> <code>/api/v1/accounts/{accountId}/custom_attribute_definitions/{id?}</code></p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON — POST custom_attribute_definitions</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "attribute_display_name": "Nguồn khách hàng",
+  "attribute_key": "nguon_khach_hang",
+  "attribute_display_type": "list",
+  "attribute_description": "Kênh khách biết tới sản phẩm",
+  "attribute_model": 1,
+  "attribute_values": ["Facebook", "Zalo", "Giới thiệu"],
+  "default_value": null
+}</code></pre>
+          </div>
+        </div>
+
+        <h3 id="sec-param-guide" data-searchable>3.7 Giải thích Chi tiết Ý nghĩa &amp; Mục đích Tham số</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nhóm / Tham số</th><th>Bắt buộc / Vị trí</th><th>Ý nghĩa &amp; Mục đích xử lý</th></tr></thead>
+            <tbody>
+              <tr><td><code>accountId</code></td><td>Path xINBOX (Có)</td><td>Cô lập Agents, Inboxes, Labels, Canned Responses &amp; Custom Fields theo tenant. Với key <code>xib_...</code> phải khớp workspace cấp key.</td></tr>
+              <tr><td><code>workspaceId</code>, <code>targetUserId</code>, <code>deletedUserId</code>, <code>xinboxAgentId</code>, <code>isEnabled</code></td><td>Body Nội bộ</td><td>Định danh doanh nghiệp tích hợp, thành viên nội bộ gắn/gỡ với Agent ID xINBOX và cờ hiệu lực mapping (<code>isEnabled !== false</code>).</td></tr>
+              <tr><td><code>skip_confirmation</code>, <code>mode: "manual"</code></td><td>Agents</td><td>Kích hoạt ngay Agent mới kèm <code>password</code> bỏ qua email xác nhận; đặt lại mật khẩu trực tiếp do Admin cấp.</td></tr>
+              <tr><td><code>attribute_model</code>, <code>attribute_key</code>, <code>attribute_display_type</code>, <code>attribute_values</code></td><td>Custom Fields</td><td>Scope <code>0</code> (Hội thoại) | <code>1</code> (Khách hàng) | <code>2</code> (Doanh nghiệp). <code>attribute_key</code> (<code>/^[a-z0-9_]+$/</code>, max 50) &amp; <code>attribute_display_type</code> (<code>text|number|currency|percent|link|date|list|checkbox</code>) <strong>bất biến sau khi tạo</strong>. Kiểu <code>list</code> cần &gt;= 1 giá trị.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-rules" class="doc-section" data-searchable>
+        <h2><span class="sec-num">4</span> Quy tắc Nghiệp vụ, Cơ chế Polling &amp; Xử lý Lỗi</h2>
+
+        <h3>4.1 Bảo mật &amp; Phân quyền Agent</h3>
+        <ul>
+          <li><strong>Super Admin (<code>agent.id === 1</code>):</strong> Khóa hoàn toàn mọi thao tác sửa, đổi mật khẩu, chuyển quyền sở hữu, xóa.</li>
+          <li><strong>Chủ Workspace (<code>agent.is_owner === true</code>):</strong> Chỉ sửa <code>name</code>, khóa vai trò Quản trị viên, cấm đặt lại mật khẩu và cấm xóa.</li>
+          <li><strong>Chuyển giao quyền Chủ Workspace:</strong> Chỉ bật cho Agent có <code>role === "administrator"</code>, <code>confirmed !== false</code>, chưa phải <code>is_owner</code>.</li>
+          <li><strong>Chính sách Mật khẩu Mạnh:</strong> Tối thiểu <strong>8 ký tự</strong>, có ít nhất 1 chữ hoa (<code>A-Z</code>), 1 chữ thường (<code>a-z</code>), 1 ký tự đặc biệt. Bộ sinh ngẫu nhiên mặc định <strong>12 ký tự</strong> trộn đủ 4 nhóm (số <code>2-9</code> tránh nhầm <code>0/1/O/l/I</code>) bằng Fisher-Yates shuffle.</li>
+        </ul>
+
+        <h3>4.2 Ghép nối Nhân sự (Staff ↔ Agent Mapping)</h3>
+        <ul>
+          <li><strong>Khớp email 1 chạm:</strong> Nếu <code>agents[]</code> đã có Agent trùng email (trim + lowercase) → hiện nút <strong>Ghép nối</strong> gọi thẳng <code>createUserMapping</code>; chưa có → nút <strong>Tạo</strong> điền sẵn <code>name</code>/<code>email</code> rồi map ngay sau khi tạo.</li>
+          <li><strong>Foreign Agent Warning:</strong> Thành viên có <code>xinboxAgentId</code> không tồn tại trong <code>agents[]</code> của <code>selectedAccountId</code> hiện tại → hiện cảnh báo vàng <em>"Đã map ở workspace khác"</em> kèm <code>ID: #{agentId}</code>.</li>
+          <li><strong>Bulk Quick-Create &amp; Map:</strong> Dùng 1 mật khẩu chung hợp lệ kiểm tra với <code>agentLimit</code>, chạy tuần tự từng nhân sự; nếu API trả lỗi <code>"already"</code> / <code>"taken"</code> / <code>"exist"</code>, tự gọi lại <code>GET .../agents</code> tìm email khớp và map luôn.</li>
+          <li><strong>Unmap 1 nhân sự:</strong> Yêu cầu mã xác nhận <strong>4 chữ số</strong> (<code>1000–9999</code>). Nếu tự unmap chính <code>currentUserId</code> → xóa cache và reset <code>isConnected = false</code>.</li>
+        </ul>
+
+        <h3>4.3 Cơ chế Polling Kết nối lại Zalo QR</h3>
+        <p>Tải ảnh <code>qr_image_base64</code> → chạy timer polling mỗi <strong>3000ms (3 giây)</strong> gọi <code>.../status</code> (bỏ qua lỗi mạng thoáng qua). Dừng ngay bằng <code>clearInterval</code> khi: (1) <code>connected</code> → tải lại Inboxes và tự đóng Modal sau <strong>1800ms</strong>; (2) <code>expired</code> / <code>logged_out</code> → hiện nút <em>Làm mới QR</em>; (3) User đóng Modal hoặc rời màn hình.</p>
+
+        <h3>4.4 Quy tắc Kênh chat, Nhãn, Mẫu tin nhắn &amp; Trường tùy chỉnh</h3>
+        <ul>
+          <li><strong>Kênh mất kết nối:</strong> <code>reauthorization_required === true</code> kích hoạt chấm nhấp nháy &amp; định tuyến Zalo QR / Email (tab <code>oauth</code> hoặc <code>imap_smtp</code>) / Social OAuth popup <code>600x700</code>.</li>
+          <li><strong>Nhãn:</strong> Chuẩn hóa <code>title</code> chữ thường, khoảng trắng → <code>_</code>, gộp nhiều <code>_</code>, tối đa 50 ký tự; optimistic toggle <code>show_on_sidebar</code>; kéo-thả reorder chỉ bật khi không search &amp; không lọc nhóm.</li>
+          <li><strong>Mẫu tin nhắn:</strong> Cắt khoảng trắng &amp; dấu <code>/</code> đầu <code>short_code</code> (max 50 ký tự; <code>content</code> max 1000 ký tự).</li>
+          <li><strong>Trường Tùy chỉnh &amp; System Default Fields (Cấm Sửa &amp; Cấm Xóa):</strong> Prefetch song song cả 3 scope; auto-slug Unicode NFD bỏ dấu khi tạo mới; xóa yêu cầu mã bảo mật <strong>6 chữ số</strong> (<code>100000–999999</code>). Trường hệ thống bảo vệ: Scope <code>1</code> (<code>assigned_agent</code>, <code>lead_status</code>); Scope <code>2</code> (<code>address</code>, <code>tax_code</code>, <code>industry</code>, <code>company_phone</code>).</li>
+        </ul>
+
+        <h3>4.5 Chuẩn hóa Xử lý Lỗi</h3>
+        <ol>
+          <li><strong>HTTP <code>401</code> / <code>403</code>:</strong> <code>sign_in</code> báo sai thông tin; <code>/profile</code> báo User Access Token hết hạn/truyền nhầm key <code>xib_...</code>; endpoint account báo cần quyền Administrator nếu thông điệp chứa <code>"authorized"</code>.</li>
+          <li><strong>HTTP <code>402</code> hoặc lỗi chứa <code>"limit exceeded"</code> / <code>"license"</code> / <code>"purchase more"</code>:</strong> Báo chạm hạn mức gói (Agents hoặc Inboxes).</li>
+          <li><strong>Validation <code>data.errors</code>:</strong> Mảng nối <code>", "</code>; object format <code>"field: msg1, msg2; ..."</code>.</li>
+        </ol>
+      </section>
+
+      <section id="sec-checklist" class="doc-section" data-searchable>
+        <h2><span class="sec-num">5</span> Checklist Triển khai cho Hệ thống Độc lập</h2>
+        <ol>
+          <li>Dựng proxy cổng xINBOX + bảng DB <code>user_xinbox_mappings</code> + 4 API Mapping nội bộ (ẩn <code>token</code> ở <code>listWorkspaceMappings</code>), dùng <strong>User Access Token</strong> cho luồng Admin.</li>
+          <li>Triển khai đủ 4 điều kiện ở <code>checkInitialConnection</code> và kiểm tra bắt buộc ít nhất 1 Workspace có quyền <code>administrator</code> trước khi lưu Mapping.</li>
+          <li>Xử lý Foreign Agent Warning, <code>check_email</code> trùng toàn hệ thống, chính sách mật khẩu mạnh và fallback bulk create.</li>
+          <li>Lazy-load <code>inbox_members</code> theo tab, định tuyến 6 nhóm kênh reconnect (Zalo QR poll 3s + cleanup, Email OAuth/IMAP, IG/TikTok/WA popup, Facebook callback).</li>
+          <li>Khóa chặt System Fields, bất biến <code>attribute_key</code>/<code>display_type</code>, và hộp thoại mã xác nhận (4 số cho Unmap, 6 số cho Disconnect &amp; Xóa Custom Field).</li>
+        </ol>
+      </section>
+
+      <nav class="page-pager" aria-label="Điều hướng trang tiếp theo">
+        <a href="./index.html" class="pager-link">
+          <span class="pager-label">&larr; Trang trước</span>
+          <span class="pager-title">Tổng quan Tài liệu xINBOX</span>
+        </a>
+        <a href="./iframe-embed.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Trang tiếp theo &rarr;</span>
+          <span class="pager-title">2. Nhúng xINBOX Iframe &amp; postMessage</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2. Nhúng xINBOX Iframe &amp; Giao thức postMessage — xINBOX Docs</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Iframe Embed Spec</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab is-active" aria-current="page">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="mobileTocBtn" class="icon-btn mobile-toc-btn" type="button" aria-expanded="false" aria-controls="tocSidebar">Mục lục</button>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Tìm event, tham số..." aria-label="Tìm nhanh trong trang" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside id="tocSidebar" class="toc-sidebar" aria-label="Mục lục trang">
+      <p class="toc-title">Mục lục Tài liệu</p>
+      <ul class="toc-list">
+        <li><a class="toc-link is-active" href="#sec-overview">1. Tổng quan Nhúng &amp; Origin</a></li>
+        <li><a class="toc-link is-sub" href="#sec-origin">1.2 Whitelist ALLOWED_ORIGINS</a></li>
+        <li><a class="toc-link" href="#sec-auth-flow">2. Vòng đời Xác thực SSO</a></li>
+        <li><a class="toc-link is-sub" href="#sec-sso-diagram">2.2 Sơ đồ Handshake</a></li>
+        <li><a class="toc-link" href="#sec-protocol">3. Giao thức postMessage</a></li>
+        <li><a class="toc-link is-sub" href="#sec-host-to-iframe">3.1 Host ➔ xINBOX Iframe</a></li>
+        <li><a class="toc-link is-sub" href="#sec-iframe-to-host">3.2 xINBOX Iframe ➔ Host</a></li>
+        <li><a class="toc-link is-sub" href="#sec-params">3.3 Chi tiết Tham số</a></li>
+        <li><a class="toc-link" href="#sec-async">4. Hàng đợi &amp; Tùy chọn UI</a></li>
+        <li><a class="toc-link is-sub" href="#sec-resize">4.4 Resize &amp; Ngưỡng 1/2/3 cột</a></li>
+        <li><a class="toc-link is-sub" href="#sec-capabilities">4.5 Cờ Ảnh &amp; Contact ngoài</a></li>
+        <li><a class="toc-link" href="#sec-checklist">5. Checklist Triển khai</a></li>
+      </ul>
+    </aside>
+
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Phần 2 / 3 — Embed Protocol &amp; Cross-Window Communication</span>
+        <h1 class="hero-title">Đặc tả Kỹ thuật: Nhúng xINBOX Iframe &amp; Giao thức <code>postMessage</code> Hai chiều</h1>
+        <p class="hero-desc">
+          Mô tả đầy đủ kiến trúc nhúng ứng dụng <strong>xINBOX</strong> dưới dạng <code>&lt;iframe&gt;</code> vào bất kỳ hệ thống Web App nào: cấu hình quyền trình duyệt, whitelist bảo mật <code>ALLOWED_ORIGINS</code>, vòng đời xác thực SSO ngầm bằng User Mapping, hàng đợi chống Race Condition và hợp đồng <code>window.postMessage</code> hai chiều.
+        </p>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <section id="sec-overview" class="doc-section" data-searchable>
+        <h2><span class="sec-num">1</span> Tổng quan Kiến trúc Nhúng <code>&lt;iframe&gt;</code></h2>
+
+        <h3>1.1 Cấu hình Nhúng &amp; Quyền Trình duyệt</h3>
+        <p>Ứng dụng tích hợp nhúng trực tiếp giao diện xINBOX qua thẻ <code>&lt;iframe&gt;</code> trỏ tới URL triển khai của xINBOX Web (ví dụ: <code>https://xinbox-lite.hub.vn/</code>):</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">HTML — Iframe Embed Snippet</span>
+            <button class="copy-btn" type="button">Copy</button>
+          </div>
+          <pre><code>&lt;iframe
+  src="https://xinbox-lite.hub.vn/"
+  allow="autoplay; display-capture; microphone; camera; clipboard-read; clipboard-write"
+  style="width: 100%; height: 100%; border: 0;"
+&gt;&lt;/iframe&gt;</code></pre>
+        </div>
+        <ul>
+          <li><strong>Quyền Media &amp; Clipboard:</strong> Thuộc tính <code>allow</code> cấp quyền phát âm thanh thông báo tin nhắn mới, ghi âm/gọi media, chụp màn hình và copy/paste nhanh.</li>
+          <li><strong>Nếu có dùng <code>sandbox</code>:</strong> Phải mở đủ <code>allow-same-origin allow-scripts allow-forms allow-modals allow-popups</code> để không chặn script, form và popup OAuth.</li>
+          <li><strong>Khuyến nghị giữ sống trong DOM (Persistent Mount):</strong> Nên <strong>ẩn/hiện bằng CSS</strong> khi đóng/mở thanh bên chứa xINBOX thay vì hủy (<code>unmount</code>) thẻ <code>&lt;iframe&gt;</code>. Điều này giúp giữ nguyên kết nối WebSocket realtime để hệ thống tích hợp nhận được thông báo số tin chưa đọc (<code>OMNICHANNEL_UNREAD_COUNT_CHANGED</code>) ngay cả khi khung chat đang đóng, đồng thời giúp lần mở lại tức thì không phải tải lại trang.</li>
+        </ul>
+
+        <h3 id="sec-origin">1.2 Điều kiện Tiên quyết về Origin &amp; Whitelist Bảo mật</h3>
+        <p>xINBOX Iframe kiểm tra nghiêm ngặt <code>event.origin</code> theo danh sách trắng (<code>ALLOWED_ORIGINS</code>) ở cả 2 chiều:</p>
+        <ol>
+          <li><strong>Chiều nhận lệnh từ Host:</strong> Mọi <code>postMessage</code> từ <code>event.origin</code> không nằm trong whitelist đều bị xINBOX Iframe bỏ qua.</li>
+          <li><strong>Chiều gửi dữ liệu nhạy cảm lên Host:</strong> Các sự kiện chứa token xác thực (<code>OMNICHANNEL_AUTH_CONNECTED</code>, <code>OMNICHANNEL_AUTH_COMPLETE</code>) <strong>tuyệt đối không gửi tới wildcard <code>"*"</code></strong>. Nếu domain hệ thống tích hợp (lấy từ <code>ancestorOrigins[0]</code> hoặc <code>document.referrer</code>) chưa có trong whitelist phía xINBOX, xINBOX Iframe sẽ chặn gửi.</li>
+        </ol>
+        <div class="callout callout-warn">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <p><strong>Yêu cầu triển khai:</strong> Trước khi tích hợp trên môi trường Staging/Production, đội vận hành phải đăng ký domain chính xác (bao gồm scheme + host + port nếu có, VD: <code>https://app.company.com</code>) của hệ thống tích hợp vào danh sách <code>ALLOWED_ORIGINS</code> của xINBOX Iframe.</p>
+        </div>
+      </section>
+
+      <section id="sec-auth-flow" class="doc-section" data-searchable>
+        <h2><span class="sec-num">2</span> Vòng đời Xác thực &amp; Đồng bộ Trạng thái (Host ⟷ xINBOX Iframe)</h2>
+
+        <h3>2.1 Nguồn Dữ liệu Xác thực</h3>
+        <p>Hệ thống tích hợp lấy bản ghi <strong>User Mapping</strong> của người dùng hiện tại từ Backend Nội bộ <em>(tùy kiến trúc hệ thống tích hợp, có thể truy vấn theo cặp <code>(workspaceId, userId)</code> hoặc chỉ theo <code>userId</code> nếu không chia Workspace)</em>:</p>
+        <ul>
+          <li><strong>Ví dụ minh họa Response:</strong> <code>{ workspaceId?, hostUserId, xinboxAgentId, token, pubSubToken, isEnabled }</code></li>
+          <li><strong>Lưu ý thiết kế Mapping phía Host:</strong> <code>workspaceId</code> <strong>không bắt buộc</strong> phải có. Nếu hệ thống tích hợp là Single-tenant hoặc mỗi user chỉ liên kết 1 tài khoản xINBOX duy nhất, Backend nội bộ có thể chỉ lưu theo <code>hostUserId</code> (bỏ qua hoặc đặt mặc định <code>workspaceId = 0</code> / <code>1</code>). xINBOX Iframe không dùng <code>workspaceId</code> này để xử lý nghiệp vụ chat (nghiệp vụ xINBOX chạy theo <code>accountId</code>).</li>
+        </ul>
+
+        <h3>2.2 Ba Trạng thái Khởi tạo Khi Mở / Chuyển Workspace</h3>
+        <ol>
+          <li><strong>Trạng thái A — Đã có Mapping kèm <code>token</code> hợp lệ (SSO Tự động):</strong>
+            Khi <code>&lt;iframe&gt;</code> đã load hoặc phát <code>OMNICHANNEL_READY</code> và đã có <code>token</code> từ Backend Nội bộ, Host gửi <code>OMNICHANNEL_INIT_AUTH</code> chứa <code>token</code> tới đúng <code>targetOrigin</code> của xINBOX. xINBOX tự đăng nhập, mở WebSocket realtime, tải danh sách hội thoại rồi phát lại <code>OMNICHANNEL_AUTH_COMPLETE</code>.</li>
+          <li><strong>Trạng thái B — Đã có Mapping nhưng CHƯA có <code>token</code>:</strong>
+            Host gửi <code>OMNICHANNEL_LOGOUT</code> để Iframe hiện form đăng nhập 1 lần (kèm gửi <code>OMNICHANNEL_INIT_AUTH</code> không <code>token</code> nếu muốn hiện Co-branding <code>brandName</code>). User đăng nhập xong → Iframe phát <code>OMNICHANNEL_AUTH_CONNECTED</code> → Host gọi <code>updateUserMapping</code> lưu bù <code>token</code> + <code>pubSubToken</code>.</li>
+          <li><strong>Trạng thái C — Chưa có Mapping trên Backend Nội bộ:</strong>
+            Host gửi <code>OMNICHANNEL_LOGOUT</code> để hiện form đăng nhập. Khi user đăng nhập thành công và Iframe phát <code>OMNICHANNEL_AUTH_CONNECTED</code>, Host gọi <code>createUserMapping</code> để tạo liên kết mới.</li>
+        </ol>
+
+        <div class="callout callout-info">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p><strong>Cơ chế Handshake khi Iframe khởi động:</strong> Khi mới nạp vào DOM mà chưa có phiên, xINBOX Iframe tự phát <code>OMNICHANNEL_READY</code> nhiều nhịp (<code>0ms</code>, <code>100ms</code>, <code>300ms</code>, <code>700ms</code>, <code>1500ms</code>) và chờ tối đa <strong>3000ms</strong> để Host App bơm <code>OMNICHANNEL_INIT_AUTH</code> trước khi tự mở form đăng nhập thủ công.</p>
+        </div>
+
+        <h3 id="sec-sso-diagram">Sơ đồ Tuần tự SSO &amp; User Mapping</h3>
+        <div class="diagram-box" role="img" aria-label="Sơ đồ tuần tự bắt tay SSO và User Mapping giữa Host App, Backend Nội bộ, xINBOX Iframe và xINBOX Server">
+          <svg viewBox="0 0 880 430" width="100%" style="max-width: 880px; display: block; margin: auto; font-family: var(--font-sans);">
+            <defs>
+              <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f6b4f"/>
+              </marker>
+              <marker id="arr-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+              </marker>
+            </defs>
+
+            <!-- Participants -->
+            <rect x="30" y="14" width="140" height="34" rx="8" fill="#0f172a"/><text x="100" y="36" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Host App</text>
+            <rect x="255" y="14" width="145" height="34" rx="8" fill="#1e293b"/><text x="327" y="36" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Backend Nội bộ</text>
+            <rect x="485" y="14" width="145" height="34" rx="8" fill="#0f6b4f"/><text x="557" y="36" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">xINBOX Iframe</text>
+            <rect x="710" y="14" width="140" height="34" rx="8" fill="#0f172a"/><text x="780" y="36" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="700">xINBOX Server</text>
+
+            <!-- Lifelines -->
+            <line x1="100" y1="48" x2="100" y2="416" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+            <line x1="327" y1="48" x2="327" y2="416" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+            <line x1="557" y1="48" x2="557" y2="416" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+            <line x1="780" y1="48" x2="780" y2="416" stroke="var(--color-border-strong)" stroke-dasharray="4 4"/>
+
+            <!-- Step 1-3 -->
+            <line x1="100" y1="74" x2="322" y2="74" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-s)"/>
+            <text x="211" y="68" text-anchor="middle" fill="var(--color-text)" font-size="11">1. getMyMapping(workspaceId?)</text>
+            <line x1="327" y1="98" x2="105" y2="98" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arr-s)"/>
+            <text x="216" y="92" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">2. { xinboxAgentId?, token?, pubSubToken? }</text>
+            <line x1="557" y1="126" x2="105" y2="126" stroke="#0f6b4f" stroke-width="1.6" stroke-dasharray="4 2" marker-end="url(#arr-g)"/>
+            <text x="331" y="120" text-anchor="middle" fill="#0f6b4f" font-size="11" font-weight="600">3. OMNICHANNEL_READY (0 / 100 / 300 / 700 / 1500ms)</text>
+
+            <!-- Alt A -->
+            <rect x="46" y="142" width="790" height="122" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent-border)"/>
+            <text x="60" y="160" fill="#0f6b4f" font-size="11" font-weight="700">NHÁNH A: ĐÃ CÓ TOKEN HỢP LỆ (SSO TỰ ĐỘNG)</text>
+            <line x1="100" y1="180" x2="552" y2="180" stroke="#0f6b4f" stroke-width="1.7" marker-end="url(#arr-g)"/>
+            <text x="326" y="174" text-anchor="middle" fill="var(--color-text)" font-size="10.5">4. OMNICHANNEL_INIT_AUTH { token, brandName?, externalViewImage, externalContact, showToggleSize }</text>
+            <line x1="557" y1="205" x2="775" y2="205" stroke="#0f6b4f" stroke-width="1.6" marker-end="url(#arr-g)"/>
+            <text x="666" y="199" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">5. Xác thực token + tải hội thoại + WSS</text>
+            <line x1="557" y1="230" x2="105" y2="230" stroke="#0f6b4f" stroke-width="1.7" stroke-dasharray="4 2" marker-end="url(#arr-g)"/>
+            <text x="331" y="224" text-anchor="middle" fill="#0f6b4f" font-size="10.5" font-weight="600">6. OMNICHANNEL_AUTH_COMPLETE (chặn nếu ngoài ALLOWED_ORIGINS)</text>
+            <line x1="100" y1="252" x2="552" y2="252" stroke="#0f6b4f" stroke-width="1.5" marker-end="url(#arr-g)"/>
+            <text x="326" y="247" text-anchor="middle" fill="var(--color-text)" font-size="10.5">7. Flush pendingAction (VD: OMNICHANNEL_OPEN_CONVERSATION)</text>
+
+            <!-- Alt B/C -->
+            <rect x="46" y="276" width="790" height="130" rx="8" fill="var(--color-surface)" stroke="var(--color-border-strong)"/>
+            <text x="60" y="294" fill="var(--color-text)" font-size="11" font-weight="700">NHÁNH B / C: CHƯA CÓ TOKEN HOẶC CHƯA CÓ MAPPING</text>
+            <line x1="100" y1="316" x2="552" y2="316" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-s)"/>
+            <text x="326" y="310" text-anchor="middle" fill="var(--color-text)" font-size="10.5">8. OMNICHANNEL_LOGOUT (+ INIT_AUTH không token nếu truyền brandName Co-branding)</text>
+            <line x1="557" y1="342" x2="775" y2="342" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-s)"/>
+            <text x="666" y="336" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">9. User đăng nhập 1 lần trong Iframe</text>
+            <line x1="557" y1="368" x2="105" y2="368" stroke="#0f6b4f" stroke-width="1.7" stroke-dasharray="4 2" marker-end="url(#arr-g)"/>
+            <text x="331" y="362" text-anchor="middle" fill="#0f6b4f" font-size="10.5" font-weight="600">10. OMNICHANNEL_AUTH_CONNECTED { id, token, pubsubToken, accounts }</text>
+            <line x1="100" y1="394" x2="322" y2="394" stroke="#475569" stroke-width="1.6" marker-end="url(#arr-s)"/>
+            <text x="211" y="388" text-anchor="middle" fill="var(--color-text)" font-size="10.5">11. updateUserMapping (B) / createUserMapping (C)</text>
+          </svg>
+        </div>
+
+        <h3>2.3 Xử lý Khi Chuyển Workspace hoặc Hết hạn Phiên</h3>
+        <ul>
+          <li><strong>User đổi Workspace trên Hệ thống Tích hợp:</strong> Đặt lại cờ <code>hasInjectedAuth = false</code>, xóa trạng thái tạm, gọi lại <code>getMyMapping(newWorkspaceId)</code> (bỏ qua cache) rồi thực hiện lại theo 1 trong 3 trạng thái ở Mục 2.2.</li>
+          <li><strong>Token hết hạn (<code>401 Unauthorized</code> từ xINBOX Server):</strong> xINBOX Iframe tự ngắt WebSocket, logout và phát lại <code>OMNICHANNEL_READY</code>.</li>
+          <li><strong>User tự bấm Đăng xuất trong Iframe:</strong> Iframe gửi <code>OMNICHANNEL_LOGOUT</code> về Host → Host xóa cache mapping cục bộ (giữ ghi nhớ <code>hasExistingMappingOnServer</code> để lần login lại gọi <code>update</code>).</li>
+          <li><strong>User bấm Hủy liên kết tài khoản trong Iframe:</strong> Iframe gửi <code>OMNICHANNEL_DELETE_MAPPING</code> → Host gọi API nội bộ <code>deleteUserMapping</code>, xóa state cục bộ và gửi <code>OMNICHANNEL_LOGOUT</code> vào Iframe.</li>
+        </ul>
+      </section>
+
+      <section id="sec-protocol" class="doc-section" data-searchable>
+        <h2><span class="sec-num">3</span> Đặc tả Giao thức <code>window.postMessage</code> Hai chiều</h2>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">JSON — Định dạng gói tin chuẩn</span>
+            <button class="copy-btn" type="button">Copy</button>
+          </div>
+          <pre><code>{
+  "type": "&lt;EVENT_TYPE&gt;",
+  "payload": { }
+}</code></pre>
+        </div>
+        <p><em>Lưu ý:</em> Luôn truyền JSON thuần (tránh Proxy/Reactive object gây <code>DataCloneError</code>). Các tên <code>type</code> (<code>OMNICHANNEL_INIT_AUTH</code>, <code>OMNICHANNEL_READY</code>...) là chuỗi định danh cố định trên đường truyền giữa hai ứng dụng.</p>
+
+        <div class="filter-bar" data-filter-group="pm-events">
+          <button class="filter-pill is-active" type="button" data-filter-val="all">Tất cả Event</button>
+          <button class="filter-pill" type="button" data-filter-val="h2i">Host ➔ Iframe (8)</button>
+          <button class="filter-pill" type="button" data-filter-val="i2h">Iframe ➔ Host (11)</button>
+        </div>
+
+        <h3 id="sec-host-to-iframe" data-filter-item="pm-events" data-filter-cat="h2i">3.1 Chiều Host App ➔ xINBOX Iframe</h3>
+        <div class="table-wrap" data-filter-item="pm-events" data-filter-cat="h2i">
+          <table>
+            <thead>
+              <tr>
+                <th>Event <code>type</code></th>
+                <th>Alias hỗ trợ</th>
+                <th>Cấu trúc <code>payload</code></th>
+                <th>Mục đích &amp; Hành vi phía xINBOX Iframe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>OMNICHANNEL_INIT_AUTH</code></td>
+                <td><code>INIT_AUTH</code>, <code>SET_AUTH</code>, <code>OMNICHANNEL_SET_TOKEN</code></td>
+                <td><code>{ token?, pubsubToken?, userId?, workspaceId?, deletedUserId?, brandName?, externalViewImage?, externalContact?, showToggleSize? }</code></td>
+                <td>Bơm User Access Token để tự động đăng nhập (hoặc truyền cấu hình Co-branding <code>brandName</code> &amp; 3 cờ UI ngay cả khi chưa có <code>token</code>). Nếu có <code>token</code>, Iframe trả <code>OMNICHANNEL_AUTH_COMPLETE</code>; nếu không có <code>token</code>, Iframe tắt loading và mở ngay form đăng nhập Co-branding.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_LOGOUT</code></td>
+                <td><code>LOGOUT</code></td>
+                <td><code>{}</code></td>
+                <td>Ép đăng xuất phiên hiện tại, ngắt WebSocket realtime và hiển thị form đăng nhập.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_SWITCH_WORKSPACE</code></td>
+                <td><code>SWITCH_WORKSPACE</code></td>
+                <td><code>{ accountId }</code> <em>(hoặc số)</em></td>
+                <td>Chuyển tài khoản/workspace xINBOX đang active sang <code>accountId</code> <em>(tự đợi tối đa 6s nếu đang auth)</em>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_OPEN_CONVERSATION</code></td>
+                <td>—</td>
+                <td><code>{ conversationId, accountId? }</code></td>
+                <td>Đợi auth sẵn sàng → chuyển sang <code>accountId</code> (nếu có và khác hiện tại) → mở đúng phòng chat <code>conversationId</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_OPEN_NEW_CONVERSATION</code></td>
+                <td>—</td>
+                <td><code>{ contact?, accountId? }</code></td>
+                <td>Đợi auth → chuyển <code>accountId</code> → mở Modal soạn hội thoại mới kèm điền sẵn <code>contact</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_CONTACT_DELETED</code></td>
+                <td>—</td>
+                <td><code>{ contactId, accountId? }</code></td>
+                <td>Đồng bộ xóa từ CRM Host: lọc bỏ hội thoại của <code>contactId</code>, đóng chi tiết nếu đang mở và tải lại danh sách.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_SIZE_CHANGED</code></td>
+                <td>—</td>
+                <td><code>{ size: string, isFull: boolean }</code></td>
+                <td>Báo trạng thái kích thước khung chứa (thường vs <code>"FULL"</code>) để header trong Iframe đồng bộ nút phóng to/thu nhỏ.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_LANG_CHANGE</code></td>
+                <td><code>SET_LANG</code></td>
+                <td><code>{ lang: "vi" | "en" }</code> <em>(hoặc <code>locale</code>)</em></td>
+                <td>Đồng bộ thay đổi ngôn ngữ hiển thị trong Iframe theo Host App.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="sec-iframe-to-host" data-filter-item="pm-events" data-filter-cat="i2h">3.2 Chiều xINBOX Iframe ➔ Host App</h3>
+        <div class="table-wrap" data-filter-item="pm-events" data-filter-cat="i2h">
+          <table>
+            <thead>
+              <tr>
+                <th>Event <code>type</code></th>
+                <th>Cấu trúc <code>payload</code></th>
+                <th>Mục đích &amp; Hành vi phía Host App</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>OMNICHANNEL_READY</code></td>
+                <td><code>{ status: "ready" }</code></td>
+                <td>Iframe sẵn sàng nhận lệnh. Host trả <code>OMNICHANNEL_SIZE_CHANGED</code> và bơm <code>OMNICHANNEL_INIT_AUTH</code> (nếu có token chưa inject), hoặc flush <code>pendingAction</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_AUTH_COMPLETE</code></td>
+                <td><code>{ status: "complete" }</code></td>
+                <td>Xác thực &amp; tải xong hội thoại ban đầu. Đây là <strong>tín hiệu chuẩn nhất</strong> để Host App thực thi <code>pendingAction</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_AUTH_CONNECTED</code></td>
+                <td><code>{ id, token, pubsubToken, accountId, accounts, user? }</code></td>
+                <td>User đăng nhập thủ công thành công trong Iframe. Host gọi <code>createUserMapping</code> / <code>updateUserMapping</code> lưu phiên. <em>(Chỉ gửi tới origin trong <code>ALLOWED_ORIGINS</code>)</em>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_LOGOUT</code></td>
+                <td><code>{}</code></td>
+                <td>User bấm Đăng xuất trong Iframe → Host xóa cache phiên cục bộ.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_DELETE_MAPPING</code></td>
+                <td><code>{ workspaceId?, deletedUserId? }</code></td>
+                <td>User bấm Hủy liên kết trong Iframe → Host gọi <code>deleteUserMapping</code>, dọn state và gửi lại <code>OMNICHANNEL_LOGOUT</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_UNREAD_COUNT_CHANGED</code></td>
+                <td><code>{ unreadCount, hasUnread, latestMessage? }</code></td>
+                <td>Phát tự động khi tổng tin chưa đọc đổi → Host cập nhật badge/chấm đỏ (ngay cả khi Iframe đang ẩn).</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_TOGGLE_SIZE</code> <span class="badge badge-neutral">legacy: fullsizePopup</span></td>
+                <td><code>{ isFull: boolean }</code></td>
+                <td>User bấm nút phóng to/thu nhỏ trên Header Iframe → Host đổi kích thước khung chứa (thường ↔ <code>"FULL"</code>) và lưu tùy chọn.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_GET_SIZE</code></td>
+                <td><code>{}</code></td>
+                <td>Iframe hỏi kích thước hiện tại khi header mount → Host gửi lại <code>OMNICHANNEL_SIZE_CHANGED</code>.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_CONTACT_DELETED</code></td>
+                <td><code>{ contactId, accountId? }</code></td>
+                <td>User xóa Contact trong Iframe → Host đồng bộ xóa/cập nhật danh sách Contact trên CRM.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_VIEW_CONTACT</code> <span class="badge badge-post">externalContact: true</span></td>
+                <td><code>{ contactId, accountId?, conversationId?, contact? }</code></td>
+                <td>User bấm <strong>"Xem thông tin liên hệ"</strong> (tùy chọn riêng trong menu <code>...</code>) → Host nhận <code>contactId</code> để tự gọi API và mở hồ sơ CRM bên Host.</td>
+              </tr>
+              <tr>
+                <td><code>OMNICHANNEL_VIEW_IMAGE</code> <span class="badge badge-neutral">legacy: viewListImage</span></td>
+                <td><code>{ index: number, images: Array&lt;{ title, url, thumbUrl? }&gt; }</code></td>
+                <td>Khi <code>externalViewImage: true</code>: Host bật Lightbox toàn màn hình <em>(chỉ nghe <code>OMNICHANNEL_VIEW_IMAGE</code> để tránh mở 2 lần)</em>. Khi <code>false</code>: Iframe tự mở viewer nội bộ.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="sec-params">3.3 Giải thích Chi tiết Ý nghĩa từng Tham số Quan trọng</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tham số</th>
+                <th>Chiều truyền</th>
+                <th>Ý nghĩa &amp; Mục đích sử dụng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>token</code></td><td>Host ⇄ Iframe</td><td><strong>User Access Token</strong> bên xINBOX (không dùng Account API Key <code>xib_...</code>). Dùng cho mọi API và kết nối realtime.</td></tr>
+              <tr><td><code>pubsubToken</code></td><td>Host ⇄ Iframe</td><td>Token xác thực kênh WebSocket/ActionCable realtime; lưu kèm trong User Mapping nội bộ.</td></tr>
+              <tr><td><code>userId</code> / <code>id</code></td><td>Host ⇄ Iframe</td><td>ID Agent bên xINBOX (<code>xinboxAgentId</code>).</td></tr>
+              <tr><td><code>workspaceId</code> &amp; <code>deletedUserId</code></td><td>Host ➔ Iframe</td><td>Ngữ cảnh Hệ thống Tích hợp; Iframe chỉ giữ tạm để trả lại khi user bấm hủy liên kết (<code>OMNICHANNEL_DELETE_MAPPING</code>). Không bắt buộc với hệ thống Single-tenant.</td></tr>
+              <tr><td><code>accountId</code></td><td>Host ⇄ Iframe</td><td>ID Account/Workspace bên <strong>xINBOX</strong> (khác với <code>workspaceId</code> của hệ thống tích hợp).</td></tr>
+              <tr><td><code>conversationId</code></td><td>Host ➔ Iframe</td><td>ID hội thoại cần nhảy tới ngay khi mở Iframe.</td></tr>
+              <tr><td><code>contact</code></td><td>Host ⇄ Iframe</td><td>Chiều <code>OPEN_NEW_CONVERSATION</code>: điền sẵn form tạo hội thoại mới. Chiều <code>VIEW_CONTACT</code>: gửi kèm ngữ cảnh cơ bản cùng <code>contactId</code>.</td></tr>
+              <tr><td><code>brandName</code> <em>(alias <code>partnerName</code>)</em></td><td>Host ➔ Iframe</td><td>Tên thương hiệu hệ thống tích hợp. Khi có giá trị, Auth Modal hiện header Co-branding <code>xINBOX | &lt;brandName&gt;</code>. Có thể gửi trong <code>OMNICHANNEL_INIT_AUTH</code> không kèm <code>token</code> lúc chưa đăng nhập.</td></tr>
+              <tr><td><code>externalViewImage</code></td><td>Host ➔ Iframe</td><td>Boolean (mặc định <code>false</code>). <code>true</code>: ủy quyền mở Lightbox qua <code>OMNICHANNEL_VIEW_IMAGE</code>; <code>false</code>: dùng trình xem ảnh nội bộ.</td></tr>
+              <tr><td><code>externalContact</code></td><td>Host ➔ Iframe</td><td>Boolean (mặc định <code>false</code>). Tùy chọn độc lập hoàn toàn (không liên quan panel <strong>"Thông tin hội thoại"</strong> nội bộ): bật mục <strong>"Xem thông tin liên hệ"</strong> trong menu <code>...</code> để emit <code>OMNICHANNEL_VIEW_CONTACT</code>.</td></tr>
+              <tr><td><code>showToggleSize</code></td><td>Host ➔ Iframe</td><td>Boolean (mặc định <code>false</code>). Chỉ bật <code>true</code> khi Host có xử lý <code>OMNICHANNEL_TOGGLE_SIZE</code> đổi kích thước khung chứa.</td></tr>
+              <tr><td><code>size</code> / <code>isFull</code></td><td>Host ⇄ Iframe</td><td>Đồng bộ trạng thái thu gọn / mở rộng (<code>FULL</code>) giữa khung sidebar ngoài và nút bấm Header Iframe.</td></tr>
+              <tr><td><code>images</code>, <code>index</code></td><td>Iframe ➔ Host</td><td>Danh sách ảnh <code>{ title, url, thumbUrl? }</code> và vị trí index <code>0</code>-based trong <code>OMNICHANNEL_VIEW_IMAGE</code> <em>(legacy <code>viewListImage</code> gửi <code>AllowEdit</code>, <code>Index</code>, <code>ListFile</code>)</em>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-async" class="doc-section" data-searchable>
+        <h2><span class="sec-num">4</span> Hàng đợi Hành động, Chống Race Condition &amp; Tùy biến UI</h2>
+
+        <h3>4.1 Cơ chế Hàng đợi Hành động (<code>Pending Action Queue</code>)</h3>
+        <ul>
+          <li><strong>Capture ở tầng Global trước khi Mount:</strong> Đăng ký listener cấp ứng dụng (global singleton) giữ hành động gần nhất (<code>pendingOpenAction = { type, payload }</code>) ngay cả trước khi thẻ <code>&lt;iframe&gt;</code> mount vào DOM.</li>
+          <li><strong>Điều kiện đẩy lệnh ngay (<code>dispatchActionToIframe</code>):</strong> Chỉ gửi trực tiếp khi đồng thời đạt <code>iframe</code> có trong DOM, <code>iframeLoaded === true</code> và <code>hasInjectedAuth === true</code>; nếu chưa → giữ trong <code>pendingOpenAction</code>.</li>
+          <li><strong>Flush &amp; Retry an toàn:</strong> Trigger chính tại <code>OMNICHANNEL_AUTH_COMPLETE</code>; fallback timer <code>500ms</code> sau khi gửi <code>OMNICHANNEL_INIT_AUTH</code>; retry tối đa <strong>20 lần × 200ms</strong> (4s) rồi hủy để tránh treo vòng lặp.</li>
+        </ul>
+
+        <h3>4.2 Chống Race Condition khi Chuyển Workspace &amp; Mở Hội thoại</h3>
+        <div class="callout callout-danger">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+          <p><strong>Tuyệt đối không gửi <code>OMNICHANNEL_SWITCH_WORKSPACE</code> tách rời song song với <code>OMNICHANNEL_OPEN_CONVERSATION</code>.</strong> Thay vào đó, luôn gói <code>accountId</code> <strong>nằm ngay bên trong payload của <code>OMNICHANNEL_OPEN_CONVERSATION</code></strong> (hoặc <code>OMNICHANNEL_OPEN_NEW_CONVERSATION</code>) để Iframe tự <code>await</code> chuyển workspace xong rồi mới mở hội thoại.</p>
+        </div>
+
+        <h3>4.3 Bảo mật <code>postMessage</code> Hai phía</h3>
+        <ul>
+          <li><strong>Khi nhận:</strong> Luôn phân tích <code>expectedOrigin = new URL(xinboxIframeUrl).origin</code> và kiểm tra <code>if (event.origin !== expectedOrigin) return;</code>.</li>
+          <li><strong>Khi gửi:</strong> Luôn truyền đúng <code>targetOrigin = new URL(xinboxIframeUrl).origin</code> thay vì <code>"*"</code> cho mọi gói tin chứa token/dữ liệu.</li>
+          <li><strong>Nếu truyền token qua URL Query:</strong> Iframe tự xóa token khỏi thanh địa chỉ bằng <code>history.replaceState</code>, nhưng vẫn khuyến nghị dùng <code>postMessage</code> (<code>OMNICHANNEL_INIT_AUTH</code>).</li>
+        </ul>
+
+        <h3 id="sec-resize">4.4 Cơ chế Đồng bộ Nút Toggle Resize &amp; Ngưỡng Responsive 1/2/3 Cột</h3>
+        <ul>
+          <li><strong>Điều kiện hiển thị nút Phóng to / Thu nhỏ:</strong> Chỉ hiện khi chạy trong <code>&lt;iframe&gt;</code> <strong>và</strong> <code>showToggleSize: true</code> trong <code>OMNICHANNEL_INIT_AUTH</code>.</li>
+          <li><strong>Chống lỗi Toggle 2 lần phía Host App:</strong> Khi user bấm nút, Iframe phát đồng thời <code>OMNICHANNEL_TOGGLE_SIZE</code> (<code>{ isFull }</code>) và legacy <code>fullsizePopup</code> (<code>boolean</code>). Host <strong>chỉ lắng nghe <code>OMNICHANNEL_TOGGLE_SIZE</code></strong>, đọc thẳng boolean <code>isFull</code>, lưu <code>localStorage</code> và gửi lại <code>OMNICHANNEL_SIZE_CHANGED</code>.</li>
+          <li><strong>Host tự kiểm soát CSS chiều rộng:</strong> Bên trong xINBOX tự responsive theo chiều rộng thực tế của <code>&lt;iframe&gt;</code>:</li>
+        </ul>
+
+        <div class="filter-bar">
+          <span style="font-size: 0.82rem; font-weight: 600; color: var(--color-text);">Thử xem trước Layout theo chiều rộng Iframe:</span>
+          <button class="filter-pill" type="button" data-sim-width="380">380px (1 cột)</button>
+          <button class="filter-pill is-active" type="button" data-sim-width="960">960px (2 cột)</button>
+          <button class="filter-pill" type="button" data-sim-width="1360">1360px (3 cột)</button>
+        </div>
+
+        <div id="simFrame" class="sim-frame">
+          <div class="sim-toolbar">
+            <span>Mô phỏng xINBOX Iframe Layout</span>
+            <span id="simLabel">960px (768px–1279px) — Chế độ 2 cột (Split View)</span>
+          </div>
+          <div id="simCols" class="sim-cols">
+            <div id="simCol1" class="sim-col">
+              <div class="sim-col-title">Cột 1: Danh sách Hội thoại</div>
+              <p style="margin:0;">Mặc định <code>380px</code> (hoặc thu gọn <code>68px</code>). Trên &lt; 768px tự ẩn khi vào phòng chat.</p>
+            </div>
+            <div id="simCol2" class="sim-col">
+              <div class="sim-col-title">Cột 2: Khung Chat Trung tâm</div>
+              <p style="margin:0;">Chiếm toàn bộ không gian còn lại (<code>flex: 1</code>). Hiển thị header, lịch sử tin nhắn và khung nhập liệu.</p>
+              <span class="sim-badge-overlay">&lt; 1280px: Panel "Thông tin hội thoại" mở kiểu Overlay trượt phải</span>
+            </div>
+            <div id="simCol3" class="sim-col">
+              <div class="sim-col-title">Cột 3: Thông tin Hội thoại (380px)</div>
+              <p style="margin:0;">Chỉ hiển thị song song từ <code>&gt;= 1280px</code> mà không đè lên khung chat.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 id="sec-capabilities">4.5 Tùy chọn <code>externalViewImage</code> &amp; <code>externalContact</code></h3>
+        <ul>
+          <li><strong><code>externalViewImage</code> (mặc định <code>false</code>):</strong> <code>false</code> → mở viewer nội bộ trong Iframe; <code>true</code> → phát <code>OMNICHANNEL_VIEW_IMAGE</code> (kèm legacy <code>viewListImage</code>) để Host mở Lightbox toàn màn hình.</li>
+          <li><strong><code>externalContact</code> (mặc định <code>false</code>):</strong> Tùy chọn tách riêng hoàn toàn (không liên quan tới panel <strong>"Thông tin hội thoại"</strong> nội bộ). Khi <code>true</code>, menu <code>...</code> của hội thoại hiện thêm mục <strong>"Xem thông tin liên hệ"</strong> trên mọi kích thước màn hình; bấm vào sẽ emit <code>OMNICHANNEL_VIEW_CONTACT</code> kèm <code>{ contactId, accountId?, conversationId?, contact? }</code> để Host tự gọi API và mở giao diện hồ sơ riêng.</li>
+        </ul>
+      </section>
+
+      <section id="sec-checklist" class="doc-section" data-searchable>
+        <h2><span class="sec-num">5</span> Checklist Triển khai cho Hệ thống Độc lập</h2>
+        <ol>
+          <li><strong>Đăng ký Whitelist:</strong> Gửi domain Staging &amp; Production của Host để cấu hình vào <code>ALLOWED_ORIGINS</code> phía xINBOX Iframe.</li>
+          <li><strong>Dựng Khung Nhúng Persistent:</strong> Nhúng <code>&lt;iframe src="https://xinbox-lite.hub.vn/" allow="..."&gt;</code>, chỉ ẩn/hiện bằng CSS để duy trì WebSocket nhận <code>OMNICHANNEL_UNREAD_COUNT_CHANGED</code>.</li>
+          <li><strong>Nối API Mapping &amp; Init Payload:</strong> Gọi <code>getMyMapping</code> → bơm <code>OMNICHANNEL_INIT_AUTH</code> kèm <code>brandName</code> và 3 cờ (<code>externalViewImage</code>, <code>externalContact</code>, <code>showToggleSize</code>) hoặc gửi <code>OMNICHANNEL_LOGOUT</code> + config không token khi chưa đăng nhập; đồng bộ <code>OMNICHANNEL_AUTH_CONNECTED</code>, <code>OMNICHANNEL_LOGOUT</code>, <code>OMNICHANNEL_DELETE_MAPPING</code>.</li>
+          <li><strong>Hàng đợi &amp; Đồng bộ UI hai chiều:</strong> Cài <code>pendingOpenAction</code> flush tại <code>OMNICHANNEL_AUTH_COMPLETE</code>; bắt <code>OMNICHANNEL_TOGGLE_SIZE</code>, <code>OMNICHANNEL_GET_SIZE</code>, <code>OMNICHANNEL_VIEW_IMAGE</code>, <code>OMNICHANNEL_VIEW_CONTACT</code> và đồng bộ <code>OMNICHANNEL_CONTACT_DELETED</code>.</li>
+          <li><strong>Kiểm tra Origin hai đầu:</strong> Xác thực <code>event.origin === new URL(xinboxUrl).origin</code> khi nhận và truyền đúng <code>targetOrigin</code> khi gửi.</li>
+        </ol>
+      </section>
+
+      <nav class="page-pager" aria-label="Điều hướng trang tiếp theo">
+        <a href="./admin-integration.html" class="pager-link">
+          <span class="pager-label">&larr; Trang trước</span>
+          <span class="pager-title">1. Quản trị Tích hợp xINBOX &amp; API</span>
+        </a>
+        <a href="./contact-modal.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Trang tiếp theo &rarr;</span>
+          <span class="pager-title">3. Modal Soạn &amp; Gửi Tin nhắn Contact</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>
