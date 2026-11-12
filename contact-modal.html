@@ -73,7 +73,11 @@
 
       <section id="sec-gateway" class="doc-section" data-searchable>
         <h2><span class="sec-num">1</span> Tổng quan Kiến trúc &amp; Xác thực</h2>
-        <p>Toàn bộ nghiệp vụ danh bạ, hộp thư, tra cứu tài khoản Zalo, gửi lời mời kết bạn Zalo, tin nhắn mẫu và tạo hội thoại đều đi qua <strong>một cổng API xINBOX duy nhất</strong> (ví dụ reverse proxy <code>/xinbox-api/</code> ➔ <code>https://xinbox-app.hub.vn</code>), không gọi sang service trung gian rời bên ngoài.</p>
+        <p>Toàn bộ nghiệp vụ danh bạ, hộp thư, tra cứu tài khoản Zalo, gửi lời mời kết bạn Zalo, tin nhắn mẫu và tạo hội thoại đều đi qua <strong>một cổng API xINBOX duy nhất</strong> (<code>https://xinbox-app.hub.vn/api/v1/...</code>), không gọi sang service trung gian rời bên ngoài.</p>
+        <div class="callout callout-info">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p><strong>Reverse Proxy FE vs Backend Server-to-Server:</strong> Prefix <code>/xinbox-api/</code> trong các ví dụ chỉ là <strong>tên route ví dụ cho Reverse Proxy cùng domain</strong> do đội dev tự cấu hình trên Web Server/Nginx nếu gọi từ Frontend JS để tránh CORS (forward sang <code>https://xinbox-app.hub.vn/api/v1/...</code>). Nếu hệ thống có <strong>Backend riêng</strong>, hãy gọi <strong>Server-to-Server</strong> thẳng tới host xINBOX mà không cần proxy/CORS — đặc biệt khuyến nghị khi dùng <code>Account API Key (xib_...)</code> để tránh lộ key ở trình duyệt.</p>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Header</th><th>Bắt buộc</th><th>Giá trị / Quy tắc</th></tr></thead>

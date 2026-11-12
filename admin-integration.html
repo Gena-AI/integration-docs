@@ -92,7 +92,7 @@
                 <td><strong>1. xINBOX Gateway API</strong> <em>(Chuẩn cố định)</em></td>
                 <td><strong>xINBOX Server</strong></td>
                 <td>Xác thực phiên xINBOX, lấy danh sách Workspace/Account &amp; hạn mức gói, quản trị Agent, Kênh chat (<em>Inboxes</em>), Nhãn &amp; Nhóm nhãn, Tin nhắn mẫu, Trường tùy chỉnh và Kết nối lại kênh</td>
-                <td><code>/api-xinbox</code> ➔ xINBOX Server</td>
+                <td>Path thật <code>/api/v1/...</code> (VD proxy FE: <code>/api-xinbox</code> ➔ xINBOX Server)</td>
               </tr>
               <tr>
                 <td><strong>2. API Nội bộ Hệ thống Tích hợp</strong> <em>(Đội Dev tự xây)</em></td>
@@ -105,7 +105,7 @@
         </div>
         <div class="callout callout-info">
           <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <p><strong>Hạ tầng Reverse Proxy:</strong> Nếu Frontend gọi qua proxy cùng domain để tránh CORS, cấu hình timeout tối thiểu <code>60s</code>, giới hạn payload tối đa <code>50MB</code>, và kiểm tra origin/referer hợp lệ cho gateway <code>/api-xinbox/</code>.</p>
+          <p><strong>2 cách gọi REST API xINBOX (Reverse Proxy FE vs Backend Server-to-Server):</strong> Prefix <code>/api-xinbox/</code> trong tài liệu chỉ là <strong>ví dụ Reverse Proxy nội bộ cùng domain</strong> do đội dev tự cấu hình trên Web Server/Nginx/Gateway nếu gọi trực tiếp từ Frontend để tránh CORS (forward sang <code>/api/v1/...</code> trên host xINBOX; cấu hình timeout tối thiểu <code>60s</code>, payload tối đa <code>50MB</code>, kiểm tra origin/referer). Nếu hệ thống có <strong>Backend riêng</strong>, hãy gọi <strong>Server-to-Server</strong> thẳng tới <code>https://&lt;xinbox-host&gt;/api/v1/...</code> không qua proxy — đặc biệt khuyến nghị khi dùng <code>Account API Key (xib_...)</code> để tránh lộ key ở trình duyệt.</p>
         </div>
 
         <h3>1.2 Authentication &amp; Headers</h3>
@@ -166,7 +166,7 @@
 
       <section id="sec-contracts" class="doc-section">
         <h2><span class="sec-num">3</span> Danh sách API Contract Chi tiết</h2>
-        <p><strong>Nhóm 3.1.1–3.1.3 &amp; 3.2–3.6</strong> là API chuẩn cố định của xINBOX Server qua <code>/api-xinbox</code>. <strong>Mục 3.1.4</strong> là thiết kế tham chiếu cho Backend Nội bộ Hệ thống Tích hợp.</p>
+        <p><strong>Nhóm 3.1.1–3.1.3 &amp; 3.2–3.6</strong> là API chuẩn cố định của xINBOX Server (path thật <code>/api/v1/...</code> trên host xINBOX; gọi qua Reverse Proxy nội bộ nếu đi từ Frontend như <code>/api-xinbox</code>, hoặc gọi thẳng Server-to-Server từ Backend). <strong>Mục 3.1.4</strong> là thiết kế tham chiếu cho Backend Nội bộ Hệ thống Tích hợp.</p>
 
         <div class="filter-bar" data-filter-group="api-groups">
           <button class="filter-pill is-active" type="button" data-filter-val="all">Tất cả (A–F)</button>

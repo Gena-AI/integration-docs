@@ -123,10 +123,10 @@
 
       <section class="doc-section" data-searchable>
         <h2><span class="sec-num">01</span> Bức tranh Kiến trúc Tổng thể</h2>
-        <p>Hệ thống tích hợp tương tác với nền tảng xINBOX qua hai lớp song song: <strong>Kênh Quản trị &amp; Nghiệp vụ REST API</strong> (được proxy qua Gateway kèm Backend Nội bộ lưu bảng ánh xạ nhân sự) và <strong>Kênh Giao diện Nhúng Iframe</strong> giao tiếp hai chiều qua <code>window.postMessage</code>.</p>
+        <p>Hệ thống tích hợp tương tác với nền tảng xINBOX qua ba lớp song song: <strong>Kênh Quản trị &amp; Nghiệp vụ REST API</strong> (qua Gateway kèm Backend bên tích hợp lưu bảng ánh xạ nhân sự), <strong>Kênh Giao diện Nhúng Iframe</strong> giao tiếp hai chiều qua <code>window.postMessage</code>, và <strong>Kênh Outgoing Webhook</strong> đẩy sự kiện <code>contact_created</code> / <code>contact_updated</code> về Backend bên tích hợp để tự đồng bộ Contact &amp; truy vấn chi tiết Company.</p>
 
-        <div class="diagram-box" role="img" aria-label="Sơ đồ kiến trúc tổng thể kết nối Host App, Backend Nội bộ, xINBOX Gateway và xINBOX Iframe">
-          <svg viewBox="0 0 920 300" width="100%" style="max-width: 920px; display: block; margin: auto; font-family: var(--font-sans);">
+        <div class="diagram-box" role="img" aria-label="Sơ đồ kiến trúc tổng thể kết nối Host App, Backend bên tích hợp, xINBOX Gateway, xINBOX Iframe và luồng Outgoing Webhook">
+          <svg viewBox="0 0 940 340" width="100%" style="max-width: 940px; display: block; margin: auto; font-family: var(--font-sans);">
             <defs>
               <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f6b4f" />
@@ -134,59 +134,78 @@
               <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
               </marker>
+              <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706" />
+              </marker>
             </defs>
 
             <!-- Host App -->
-            <rect x="24" y="34" width="240" height="232" rx="12" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="1.5"/>
-            <rect x="24" y="34" width="240" height="36" rx="12" fill="#0f172a"/>
-            <text x="144" y="57" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">HỆ THỐNG TÍCH HỢP (HOST APP)</text>
-            <rect x="42" y="88" width="204" height="44" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
-            <text x="144" y="108" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">1. Module Quản trị Tích hợp</text>
-            <text x="144" y="124" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Mapping, Agents, Inboxes, Labels</text>
-            <rect x="42" y="146" width="204" height="44" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent-border)"/>
-            <text x="144" y="166" text-anchor="middle" fill="var(--color-accent)" font-size="12" font-weight="600">2. Container Nhúng Iframe</text>
-            <text x="144" y="182" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">SSO Init, Pending Queue, Lightbox</text>
-            <rect x="42" y="204" width="204" height="44" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
-            <text x="144" y="224" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">3. Modal Tạo Hội thoại Mới</text>
-            <text x="144" y="240" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Search Contact, Zalo Lookup, Send</text>
+            <rect x="20" y="24" width="236" height="260" rx="12" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="1.5"/>
+            <rect x="20" y="24" width="236" height="36" rx="12" fill="#0f172a"/>
+            <text x="138" y="47" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">HỆ THỐNG TÍCH HỢP (HOST APP)</text>
+            <rect x="36" y="76" width="204" height="52" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
+            <text x="138" y="97" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">1. Module Quản trị Tích hợp</text>
+            <text x="138" y="114" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Mapping, Agents, Inboxes, Labels</text>
+            <rect x="36" y="142" width="204" height="54" rx="8" fill="var(--color-accent-soft)" stroke="var(--color-accent-border)"/>
+            <text x="138" y="164" text-anchor="middle" fill="var(--color-accent)" font-size="12" font-weight="600">2. Container Nhúng Iframe</text>
+            <text x="138" y="181" text-anchor="middle" fill="var(--color-text-muted)" font-size="10.5">SSO Init, Pending Queue, Lightbox</text>
+            <rect x="36" y="210" width="204" height="54" rx="8" fill="var(--color-surface-muted)" stroke="var(--color-border)"/>
+            <text x="138" y="232" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600">3. Modal Tạo Hội thoại Mới</text>
+            <text x="138" y="249" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Search Contact, Zalo Lookup, Send</text>
 
-            <!-- Middle: Internal Backend -->
-            <rect x="348" y="34" width="224" height="106" rx="12" fill="var(--color-surface)" stroke="#2563eb" stroke-width="1.5"/>
-            <text x="460" y="60" text-anchor="middle" fill="#2563eb" font-size="12.5" font-weight="700">BACKEND NỘI BỘ CHỦ</text>
-            <text x="460" y="82" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Bảng user_xinbox_mappings</text>
-            <text x="460" y="100" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">getMyMapping / upsert / delete</text>
-            <text x="460" y="118" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Danh sách Thành viên Workspace</text>
+            <!-- Middle-Top: Backend Bên Tích Hợp -->
+            <rect x="336" y="24" width="236" height="128" rx="12" fill="var(--color-surface)" stroke="#2563eb" stroke-width="1.5"/>
+            <text x="454" y="48" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">BACKEND BÊN TÍCH HỢP</text>
+            <text x="454" y="70" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Bảng user_xinbox_mappings</text>
+            <text x="454" y="88" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">getMyMapping / upsert / delete</text>
+            <line x1="354" y1="98" x2="554" y2="98" stroke="var(--color-border)" stroke-width="1"/>
+            <text x="454" y="116" text-anchor="middle" fill="#d97706" font-size="11" font-weight="600">Webhook Receiver (HMAC-SHA256)</text>
+            <text x="454" y="134" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Tự xử lý đồng bộ Contact &amp; Company</text>
 
-            <!-- Middle: xINBOX Iframe -->
-            <rect x="348" y="160" width="224" height="106" rx="12" fill="var(--color-surface)" stroke="#0f6b4f" stroke-width="1.5"/>
-            <text x="460" y="186" text-anchor="middle" fill="#0f6b4f" font-size="12.5" font-weight="700">xINBOX IFRAME UI</text>
-            <text x="460" y="208" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Kiểm tra ALLOWED_ORIGINS</text>
-            <text x="460" y="226" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Co-branding + 1/2/3 cột Responsive</text>
-            <text x="460" y="244" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">WebSocket Realtime + ActionCable</text>
+            <!-- Middle-Bottom: xINBOX Iframe -->
+            <rect x="336" y="172" width="236" height="112" rx="12" fill="var(--color-surface)" stroke="#0f6b4f" stroke-width="1.5"/>
+            <text x="454" y="198" text-anchor="middle" fill="#0f6b4f" font-size="12.5" font-weight="700">xINBOX IFRAME UI</text>
+            <text x="454" y="220" text-anchor="middle" fill="var(--color-text-muted)" font-size="11">Kiểm tra ALLOWED_ORIGINS</text>
+            <text x="454" y="238" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">Co-branding + 1/2/3 cột Responsive</text>
+            <text x="454" y="256" text-anchor="middle" fill="var(--color-text-subtle)" font-size="10.5">WebSocket Realtime + ActionCable</text>
 
             <!-- Right: xINBOX Server -->
-            <rect x="656" y="34" width="240" height="232" rx="12" fill="#0f172a"/>
-            <text x="776" y="70" text-anchor="middle" fill="#22c55e" font-size="13.5" font-weight="700">xINBOX GATEWAY &amp; ENGINE</text>
-            <line x1="680" y1="86" x2="872" y2="86" stroke="#334155" stroke-width="1"/>
-            <text x="776" y="114" text-anchor="middle" fill="#f8fafc" font-size="11.5">REST API (/api/v1/accounts/...)</text>
-            <text x="776" y="138" text-anchor="middle" fill="#94a3b8" font-size="10.5">Header: api_access_token</text>
-            <text x="776" y="166" text-anchor="middle" fill="#f8fafc" font-size="11.5">Zalo Lookup &amp; Friend Request</text>
-            <text x="776" y="190" text-anchor="middle" fill="#f8fafc" font-size="11.5">OAuth Reconnect (Google/MS/Meta)</text>
-            <text x="776" y="214" text-anchor="middle" fill="#f8fafc" font-size="11.5">Realtime ActionCable (/cable)</text>
+            <rect x="684" y="24" width="236" height="260" rx="12" fill="#0f172a"/>
+            <text x="802" y="54" text-anchor="middle" fill="#22c55e" font-size="13" font-weight="700">xINBOX GATEWAY &amp; ENGINE</text>
+            <line x1="704" y1="70" x2="900" y2="70" stroke="#334155" stroke-width="1"/>
+            <text x="802" y="98" text-anchor="middle" fill="#f8fafc" font-size="11.5">Outgoing Webhook (POST)</text>
+            <text x="802" y="116" text-anchor="middle" fill="#fbbf24" font-size="10.5">contact_created / contact_updated</text>
+            <text x="802" y="148" text-anchor="middle" fill="#f8fafc" font-size="11.5">REST API (/api/v1/accounts/...)</text>
+            <text x="802" y="166" text-anchor="middle" fill="#94a3b8" font-size="10.5">Contacts, Companies, Header token</text>
+            <text x="802" y="196" text-anchor="middle" fill="#f8fafc" font-size="11.5">Zalo Lookup &amp; Friend Request</text>
+            <text x="802" y="224" text-anchor="middle" fill="#f8fafc" font-size="11.5">OAuth Reconnect (Google/MS/Meta)</text>
+            <text x="802" y="252" text-anchor="middle" fill="#f8fafc" font-size="11.5">Realtime ActionCable (/cable)</text>
 
             <!-- Connectors -->
-            <path d="M 264 90 L 344 90" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow-blue)" marker-start="url(#arrow-blue)"/>
-            <text x="304" y="82" text-anchor="middle" fill="#2563eb" font-size="10" font-weight="600">Session</text>
+            <path d="M 256 88 L 332 88" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow-blue)" marker-start="url(#arrow-blue)"/>
+            <text x="294" y="80" text-anchor="middle" fill="#2563eb" font-size="10" font-weight="600">Session</text>
 
-            <path d="M 264 198 L 344 198" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
-            <text x="304" y="190" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">postMessage</text>
+            <!-- Webhook Push: xINBOX Engine -> Backend Bên Tích Hợp -->
+            <path d="M 684 64 L 576 64" stroke="#d97706" stroke-width="2" marker-end="url(#arrow-amber)"/>
+            <text x="630" y="55" text-anchor="middle" fill="#d97706" font-size="10" font-weight="700">Webhook Event</text>
 
-            <path d="M 572 213 L 652 213" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
-            <text x="612" y="205" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">WSS / API</text>
+            <!-- Sync Pull / Company Detail: Backend Bên Tích Hợp -> xINBOX API -->
+            <path d="M 572 118 L 680 118" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="4 2" marker-end="url(#arrow-blue)"/>
+            <text x="626" y="110" text-anchor="middle" fill="#2563eb" font-size="9.5" font-weight="600">GET Company / Sync</text>
 
-            <path d="M 264 252 C 420 292, 540 292, 652 246" fill="none" stroke="#0f6b4f" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
-            <text x="460" y="290" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">REST qua Proxy (/api-xinbox hoặc /xinbox-api)</text>
+            <path d="M 256 226 L 332 226" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="294" y="218" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">postMessage</text>
+
+            <path d="M 572 238 L 680 238" stroke="#0f6b4f" stroke-width="1.8" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+            <text x="626" y="230" text-anchor="middle" fill="#0f6b4f" font-size="10" font-weight="600">WSS / API</text>
+
+            <path d="M 256 276 C 430 326, 560 326, 680 272" fill="none" stroke="#0f6b4f" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+            <text x="468" y="324" text-anchor="middle" fill="#0f6b4f" font-size="10.5" font-weight="600">REST /api/v1/... (FE qua Reverse Proxy nội bộ hoặc BE gọi thẳng)</text>
           </svg>
+        </div>
+        <div class="callout callout-info">
+          <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p><strong>Lưu ý về đường dẫn Proxy (<code>/api-xinbox</code>, <code>/xinbox-api</code>):</strong> Đây <strong>không phải</strong> endpoint cố định của xINBOX, mà chỉ là <strong>prefix ví dụ</strong> khi bạn tự cấu hình Reverse Proxy trên Web Server / Nginx / API Gateway cùng domain với Frontend để tránh CORS của trình duyệt (forward sang path thật <code>/api/v1/...</code> trên host xINBOX). Nếu hệ thống của bạn có <strong>Backend riêng</strong>, hãy gọi <strong>Server-to-Server</strong> trực tiếp tới <code>https://&lt;xinbox-host&gt;/api/v1/...</code> (không cần proxy hay lo CORS — và <strong>bắt buộc/khuyến nghị</strong> dùng cách này khi xác thực bằng <code>Account API Key xib_...</code> để không lộ key trên trình duyệt).</p>
         </div>
       </section>
 
