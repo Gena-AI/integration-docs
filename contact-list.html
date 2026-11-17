@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5. Danh sách &amp; Quản lý Liên hệ (Contacts API) — xINBOX Docs</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/logos/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/docs.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Chuyển tới nội dung chính</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./index.html" class="brand" aria-label="xINBOX Integration Docs">
+        <img src="./assets/logos/lockup-horizontal-ink.svg" alt="xINBOX" class="brand-logo brand-logo-light" />
+        <img src="./assets/logos/lockup-horizontal-white.svg" alt="xINBOX" class="brand-logo brand-logo-dark" />
+        <span class="brand-sub">Contacts List Spec</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Điều hướng tài liệu">
+        <a href="./index.html" class="nav-tab">Tổng quan</a>
+        <a href="./admin-integration.html" class="nav-tab">1. Quản trị &amp; API</a>
+        <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
+        <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
+        <a href="./webhooks.html" class="nav-tab">4. Webhook</a>
+        <a href="./contact-list.html" class="nav-tab is-active" aria-current="page">5. Danh sách Liên hệ</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button id="mobileTocBtn" class="icon-btn mobile-toc-btn" type="button" aria-expanded="false" aria-controls="tocSidebar">Mục lục</button>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="docSearch" class="search-input" type="search" placeholder="Tìm trường, filter, api..." aria-label="Tìm nhanh trong trang" />
+        </div>
+        <button id="themeToggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Chuyển chế độ sáng tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-15.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-15.07 7.07 1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside id="tocSidebar" class="toc-sidebar" aria-label="Mục lục trang">
+      <p class="toc-title">Mục lục Tài liệu</p>
+      <ul class="toc-list">
+        <li><a class="toc-link is-active" href="#sec-arch">1. Kiến trúc &amp; Xác thực</a></li>
+        <li><a class="toc-link" href="#sec-init">2. Quy trình Khởi tạo</a></li>
+        <li><a class="toc-link" href="#sec-apis">3. Danh sách API Liên hệ</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-list">3.1 Phân trang mặc định</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-search">3.2 Tìm kiếm nhanh</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-filter">3.3 Lọc nâng cao &amp; Views</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-update">3.4 Cập nhật / Kanban Drag</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-delete">3.5 Xóa Liên hệ</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-conversations">3.6 Lịch sử Hội thoại</a></li>
+        <li><a class="toc-link is-sub" href="#sec-api-notes">3.7 Ghi chú Nội bộ</a></li>
+        <li><a class="toc-link" href="#sec-mapping">4. Bảng Ánh xạ Thuộc tính</a></li>
+        <li><a class="toc-link" href="#sec-lead-status">5. Lưu ý lead_status &amp; assigned_agent</a></li>
+        <li><a class="toc-link is-sub" href="#sec-storage-nature">5.1 Lưu trữ trong custom_attributes</a></li>
+        <li><a class="toc-link is-sub" href="#sec-lead-status-deep">5.2 Xử lý lead_status &amp; Legacy Values</a></li>
+        <li><a class="toc-link is-sub" href="#sec-assigned-agent-deep">5.3 Xử lý assigned_agent &amp; Lookup ID</a></li>
+        <li><a class="toc-link" href="#sec-mobile-guide">6. Khuyến nghị Mobile App</a></li>
+        <li><a class="toc-link is-sub" href="#sec-infinite-scroll">6.1 Cuộn vô tận &amp; Pull-to-refresh</a></li>
+        <li><a class="toc-link is-sub" href="#sec-views">6.2 List View &amp; Kanban View</a></li>
+        <li><a class="toc-link is-sub" href="#sec-swipe">6.3 Quẹt nhanh (Swipe Actions)</a></li>
+      </ul>
+    </aside>
+
+    <main id="main-content" class="doc-main">
+      <section class="hero-card">
+        <span class="hero-eyebrow">Phần 5 / 5 — Mobile App &amp; Web Platform Integration</span>
+        <h1 class="hero-title">Đặc tả Kỹ thuật: Danh sách &amp; Quản lý Liên hệ (Contacts API)</h1>
+        <p class="hero-desc">
+          Dành cho đội ngũ phát triển Ứng dụng Di động (Mobile App iOS / Android) và Nền tảng Tích hợp CRM. Tài liệu chuẩn hóa toàn bộ luồng nạp dữ liệu, phân trang, tìm kiếm, lọc nâng cao, cấu trúc trường hiển thị, ánh xạ nhân viên &amp; doanh nghiệp, kéo thả Kanban và các thao tác liên quan đến Liên hệ.
+        </p>
+        <div class="meta-strip">
+          <span class="meta-pill">Đa kênh / Multi-channel CRM</span>
+          <span class="meta-pill">Phân trang &amp; Infinite Scroll</span>
+          <span class="meta-pill">5 Trạng thái Lead Chuẩn</span>
+          <span class="meta-pill">Custom Fields Động</span>
+        </div>
+      </section>
+
+      <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
+
+      <!-- SECTION 1 -->
+      <section id="sec-arch" class="doc-section" data-searchable>
+        <h2><span class="sec-num">1</span> Kiến trúc &amp; Xác thực (Architecture &amp; Auth)</h2>
+        <p>Mọi truy vấn danh bạ liên hệ đều đi qua xINBOX Gateway và gắn chặt với định danh tài khoản con (<code>accountId</code>):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mục</th><th>Giá trị</th></tr></thead>
+            <tbody>
+              <tr><td>Base URL</td><td><code>https://xinbox-app.hub.vn</code> (hoặc domain cấu hình theo môi trường)</td></tr>
+              <tr><td><code>api_access_token</code></td><td>Token người dùng xINBOX (gửi trong Header request)</td></tr>
+              <tr><td><code>Content-Type</code></td><td><code>application/json</code></td></tr>
+              <tr><td>Cấu trúc URL</td><td><code>/api/v1/accounts/{accountId}/contacts...</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-warning">
+          <strong>Lưu ý cho App Mobile:</strong> Khi người dùng chuyển đổi Workspace / Tài khoản xINBOX, App <strong>bắt buộc</strong> phải xóa sạch cache danh bạ cũ và kích hoạt lại quy trình nạp từ Trang 1 của <code>accountId</code> mới.
+        </div>
+      </section>
+
+      <!-- SECTION 2 -->
+      <section id="sec-init" class="doc-section" data-searchable>
+        <h2><span class="sec-num">2</span> Quy trình Khởi tạo Dữ liệu (Initialization Sequence)</h2>
+        <p>Trước khi render danh sách liên hệ lên màn hình, App cần thực hiện 4 bước khởi tạo nền tảng:</p>
+        <ol class="step-list">
+          <li><strong>Bước 1: Lấy <code>activeAccountId</code> &amp; Token:</strong> Xác định tài khoản đang làm việc từ phiên đăng nhập.</li>
+          <li><strong>Bước 2: Nạp Danh mục Nhân viên (Agents):</strong> Gọi <code>GET /api/v1/accounts/{accountId}/agents</code> để lưu map từ <code>id</code> sang Tên hiển thị, Email và Avatar của nhân viên phụ trách.</li>
+          <li><strong>Bước 3: Nạp Định nghĩa Trường tùy chỉnh (Custom Fields):</strong> Gọi <code>GET /api/v1/accounts/{accountId}/custom_attribute_definitions?attribute_model=1</code> để biết danh mục các trường động của Contact.</li>
+          <li><strong>Bước 4: Nạp Cấu hình Bộ lọc Đã lưu (Saved Views):</strong> Gọi <code>GET /api/v1/accounts/{accountId}/custom_filters?filter_type=1</code> để hiển thị các Tab lọc (Tất cả, Của tôi, Chưa phân công và các Tab riêng).</li>
+          <li><strong>Bước 5: Nạp Danh sách Liên hệ Trang 1:</strong> Gọi <code>GET /api/v1/accounts/{accountId}/contacts?page=1</code> để hiển thị dữ liệu ban đầu.</li>
+        </ol>
+      </section>
+
+      <!-- SECTION 3 -->
+      <section id="sec-apis" class="doc-section" data-searchable>
+        <h2><span class="sec-num">3</span> Danh sách API Liên hệ (API Contract)</h2>
+
+        <!-- 3.1 -->
+        <div id="sec-api-list" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-get">GET</span>
+            <code>/api/v1/accounts/{accountId}/contacts</code>
+          </div>
+          <p>Tải danh sách liên hệ phân trang mặc định (hỗ trợ cuộn vô tận trên Mobile).</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tham số</th><th>Kiểu</th><th>Mặc định</th><th>Ý nghĩa</th></tr></thead>
+              <tbody>
+                <tr><td><code>page</code></td><td>number</td><td><code>1</code></td><td>Số thứ tự trang (bắt đầu từ 1)</td></tr>
+                <tr><td><code>per_page</code> / <code>limit</code></td><td>number</td><td><code>25</code> hoặc <code>50</code></td><td>Số lượng bản ghi trên một trang</td></tr>
+                <tr><td><code>sort</code></td><td>string</td><td><code>-created_at</code></td><td>Sắp xếp: <code>name</code>, <code>-name</code>, <code>created_at</code>, <code>-created_at</code>, <code>last_activity_at</code>, <code>-last_activity_at</code>, <code>phone_number</code>, <code>-phone_number</code> (dấu <code>-</code> là giảm dần / DESC)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">Response 200 OK</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "payload": [
+    {
+      "id": 10425,
+      "name": "Nguyễn Văn An",
+      "email": "an.nguyen@congty.com",
+      "phone_number": "+84901234567",
+      "thumbnail": "https://avatar-url.com/avatar.jpg",
+      "created_at": 1709827200,
+      "last_activity_at": 1710123456,
+      "additional_attributes": {
+        "city": "Hồ Chí Minh",
+        "country": "Vietnam",
+        "description": "Giám đốc kinh doanh",
+        "social_profiles": {
+          "facebook": "https://fb.com/an.nguyen",
+          "zalo": "0901234567"
+        }
+      },
+      "custom_attributes": {
+        "lead_status": "qualified",
+        "assigned_agent": 82,
+        "company": "Công ty TNHH Giải Pháp Công Nghệ",
+        "company_id": 402,
+        "nhu_cau": "Tư vấn gói Enterprise"
+      },
+      "company": {
+        "id": 402,
+        "name": "Công ty TNHH Giải Pháp Công Nghệ"
+      }
+    }
+  ],
+  "meta": {
+    "count": 1250,
+    "current_page": 1
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- 3.2 -->
+        <div id="sec-api-search" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-get">GET</span>
+            <code>/api/v1/accounts/{accountId}/contacts/search</code>
+          </div>
+          <p>Tìm kiếm nhanh liên hệ theo từ khóa (khớp Tên, Số điện thoại hoặc Email).</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tham số</th><th>Kiểu</th><th>Bắt buộc</th><th>Ý nghĩa</th></tr></thead>
+              <tbody>
+                <tr><td><code>q</code></td><td>string</td><td>Có</td><td>Từ khóa tìm kiếm</td></tr>
+                <tr><td><code>page</code></td><td>number</td><td>Không</td><td>Số trang (mặc định <code>1</code>)</td></tr>
+                <tr><td><code>per_page</code></td><td>number</td><td>Không</td><td>Kích thước trang</td></tr>
+                <tr><td><code>sort</code></td><td>string</td><td>Không</td><td>Thứ tự sắp xếp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-info">
+            <strong>Mẹo tối ưu:</strong> Trên Mobile, gắn bộ lọc <code>debounce(300ms)</code> vào ô nhập tìm kiếm để tránh gửi request dư thừa khi người dùng đang gõ phím.
+          </div>
+        </div>
+
+        <!-- 3.3 -->
+        <div id="sec-api-filter" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-post">POST</span>
+            <code>/api/v1/accounts/{accountId}/contacts/filter</code>
+          </div>
+          <p>Lọc liên hệ nâng cao hoặc tải danh sách theo các Tab Bộ lọc Đã lưu (Saved Views).</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON Payload</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "payload": [
+    {
+      "attribute_key": "lead_status",
+      "filter_operator": "equal_to",
+      "values": ["qualified"],
+      "query_operator": "and"
+    },
+    {
+      "attribute_key": "assigned_agent",
+      "filter_operator": "equal_to",
+      "values": [82],
+      "query_operator": "and"
+    }
+  ],
+  "sort": "-created_at"
+}</code></pre>
+          </div>
+          <p>Toán tử <code>filter_operator</code> hỗ trợ: <code>equal_to</code>, <code>not_equal_to</code>, <code>contains</code>, <code>does_not_contain</code>, <code>is_present</code>, <code>is_not_present</code>.</p>
+        </div>
+
+        <!-- 3.4 -->
+        <div id="sec-api-update" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-patch">PATCH</span>
+            <code>/api/v1/accounts/{accountId}/contacts/{contactId}</code>
+          </div>
+          <p>Cập nhật thông tin liên hệ, đổi trạng thái Lead (hoặc khi kéo thả thẻ trên bảng Kanban).</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON Payload</span><button class="copy-btn" type="button">Copy</button></div>
+            <pre><code>{
+  "name": "Nguyễn Văn An",
+  "email": "an.nguyen@congty.com",
+  "phone_number": "+84901234567",
+  "custom_attributes": {
+    "lead_status": "won",
+    "assigned_agent": 82
+  },
+  "additional_attributes": {
+    "city": "Hồ Chí Minh",
+    "description": "Đã chốt hợp đồng thành công"
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- 3.5, 3.6, 3.7 -->
+        <div id="sec-api-delete" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-delete">DELETE</span>
+            <code>/api/v1/accounts/{accountId}/contacts/{contactId}</code>
+          </div>
+          <p>Xóa liên hệ khỏi hệ thống xINBOX.</p>
+        </div>
+
+        <div id="sec-api-conversations" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-get">GET</span>
+            <code>/api/v1/accounts/{accountId}/contacts/{contactId}/conversations</code>
+          </div>
+          <p>Lấy danh sách các cuộc hội thoại đa kênh (Zalo, Facebook, Email, Livechat...) của liên hệ này.</p>
+        </div>
+
+        <div id="sec-api-notes" class="endpoint-card">
+          <div class="endpoint-head">
+            <span class="badge badge-post">POST / GET</span>
+            <code>/api/v1/accounts/{accountId}/contacts/{contactId}/notes</code>
+          </div>
+          <p>Xem danh sách ghi chú nội bộ (<code>GET</code>) hoặc thêm ghi chú mới (<code>POST { "content": "Ghi chú..." }</code>).</p>
+        </div>
+      </section>
+
+      <!-- SECTION 4 -->
+      <section id="sec-mapping" class="doc-section" data-searchable>
+        <h2><span class="sec-num">4</span> Bảng Ánh xạ Thuộc tính Hiển thị (Mapping Matrix)</h2>
+        <p>Quy tắc map từng trường dữ liệu JSON từ API sang thành phần giao diện của Mobile App:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tên trường UI</th>
+                <th>Nguồn JSON từ API</th>
+                <th>Kiểu</th>
+                <th>Quy tắc hiển thị &amp; Fallback</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Tên liên hệ</strong></td>
+                <td><code>item.name</code> &rarr; <code>item.identifier</code></td>
+                <td>string</td>
+                <td>Nếu rỗng hiển thị: <code>"Khách hàng"</code>. Cắt dấu <code>...</code> nếu tên quá dài.</td>
+              </tr>
+              <tr>
+                <td><strong>Ảnh đại diện</strong></td>
+                <td><code>item.thumbnail</code> &rarr; <code>item.avatar_url</code></td>
+                <td>url</td>
+                <td>Nếu rỗng: Render avatar chữ viết tắt (Initials) trên nền màu hash.</td>
+              </tr>
+              <tr>
+                <td><strong>Chữ viết tắt</strong></td>
+                <td>Tính toán từ <code>name</code></td>
+                <td>string</td>
+                <td>Lấy tối đa 2 chữ cái đầu (VD: <em>"Nguyễn Văn An"</em> &rarr; <em>"NA"</em>).</td>
+              </tr>
+              <tr>
+                <td><strong>Số điện thoại</strong></td>
+                <td><code>item.phone_number</code></td>
+                <td>string</td>
+                <td>Định dạng hiển thị chuẩn. Nhấp vào kích hoạt gọi điện <code>tel:</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Địa chỉ Email</strong></td>
+                <td><code>item.email</code></td>
+                <td>string</td>
+                <td>Nhấp vào kích hoạt mở app gửi email <code>mailto:</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Nhân viên phụ trách</strong></td>
+                <td><code>item.custom_attributes.assigned_agent</code></td>
+                <td>number</td>
+                <td>Dùng ID này tra cứu trong danh mục Agents (Bước 2) để lấy Tên và Avatar nhân viên. Nếu rỗng: <em>"Chưa phân công"</em>.</td>
+              </tr>
+              <tr>
+                <td><strong>Doanh nghiệp</strong></td>
+                <td><code>item.company.name</code> &rarr; <code>item.custom_attributes.company</code></td>
+                <td>string</td>
+                <td>Hiển thị kèm icon tòa nhà. Nhấp vào điều hướng sang xem chi tiết Doanh nghiệp (theo <code>item.company_id</code>).</td>
+              </tr>
+              <tr>
+                <td><strong>Trạng thái Lead</strong></td>
+                <td><code>item.custom_attributes.lead_status</code></td>
+                <td>string</td>
+                <td>Hiển thị Badge màu tương ứng theo chuẩn 5 trạng thái (Mục 5).</td>
+              </tr>
+              <tr>
+                <td><strong>Thời gian tạo</strong></td>
+                <td><code>item.created_at</code></td>
+                <td>unix/iso</td>
+                <td>Format: <code>DD/MM/YYYY HH:mm</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Hoạt động cuối</strong></td>
+                <td><code>item.last_activity_at</code> &rarr; <code>item.updated_at</code></td>
+                <td>unix/iso</td>
+                <td>Format tương đối: <em>"5 phút trước"</em>, <em>"hôm qua"</em>.</td>
+              </tr>
+              <tr>
+                <td><strong>Vị trí địa lý</strong></td>
+                <td><code>item.additional_attributes.city</code>, <code>country</code></td>
+                <td>string</td>
+                <td>Tỉnh/Thành phố, Quốc gia của khách hàng.</td>
+              </tr>
+              <tr>
+                <td><strong>Mạng xã hội</strong></td>
+                <td><code>item.additional_attributes.social_profiles</code></td>
+                <td>object</td>
+                <td>Icon Facebook (<code>.facebook</code>) và Zalo (<code>.zalo</code>). Nhấp vào mở app/link tương ứng.</td>
+              </tr>
+              <tr>
+                <td><strong>Trường tùy chỉnh</strong></td>
+                <td><code>item.custom_attributes[key]</code></td>
+                <td>any</td>
+                <td>Render động theo định nghĩa trường: Ngày tháng, Số tiền (VNĐ), Checkbox (Có/Không), Văn bản.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 5 -->
+      <section id="sec-lead-status" class="doc-section" data-searchable>
+        <h2><span class="sec-num">5</span> Lưu ý Đặc biệt: Xử lý <code>lead_status</code> và <code>assigned_agent</code></h2>
+        <p>Đây là <strong>2 thuộc tính quan trọng bậc nhất</strong> trong CRM nhưng có cơ chế lưu trữ và xử lý đặc thù mà đội App bắt buộc phải nắm rõ để tránh lỗi giao diện, sai lệch trạng thái hoặc mất liên kết nhân viên.</p>
+
+        <!-- 5.1 Storage Nature -->
+        <div id="sec-storage-nature" class="alert-box" style="margin-top: 20px;">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">
+            <h4>5.1 Bản chất Lưu trữ: Nằm trong <code>custom_attributes</code> (Không phải Root Field)</h4>
+            <p style="margin-bottom: 8px;">Trong kiến trúc xINBOX CRM, model <code>Contact</code> <strong>không</strong> có cột trực tiếp tên là <code>lead_status</code> hay <code>assigned_agent</code> ở cấp root (như <code>name</code>, <code>email</code>, <code>phone_number</code>). Cả 2 trường này nằm trong object <code>custom_attributes</code>:</p>
+            <ul style="margin: 0 0 10px 18px; font-size: 13px;">
+              <li><code>contact.custom_attributes.lead_status</code></li>
+              <li><code>contact.custom_attributes.assigned_agent</code> (hoặc fallback <code>contact.additional_attributes.assigned_agent</code> ở bản ghi cũ).</li>
+            </ul>
+            <p style="margin: 0; font-size: 13px;"><strong>Quy tắc ghi (POST / PATCH):</strong> Payload gửi lên <strong>bắt buộc</strong> phải bọc trong <code>custom_attributes</code>: <code>{ "custom_attributes": { "lead_status": "contacted", "assigned_agent": 82 } }</code>. Tuyệt đối không để ngoài root payload vì API sẽ bỏ qua.</p>
+          </div>
+        </div>
+
+        <!-- 5.2 Lead Status Deep Dive -->
+        <div id="sec-lead-status-deep" style="margin-top: 32px;">
+          <h3>5.2 Chuyên sâu về <code>lead_status</code> (Trạng thái Lead &amp; Legacy Values)</h3>
+          <p>Hệ thống có 5 trạng thái chuẩn quốc tế. Tuy nhiên, do dữ liệu từ nhiều nguồn (import Excel, bot webhook, dữ liệu cũ), database tồn tại các giá trị kế thừa (Legacy Values) bằng tiếng Việt hoặc tiếng Anh.</p>
+
+          <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div class="endpoint-card" style="margin: 0; border-left: 4px solid #64748b;">
+              <div class="endpoint-head"><code>new</code><span class="badge" style="background: rgba(100,116,139,0.15); color: #64748b;">Mới tiếp cận</span></div>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Khách mới phát sinh, chưa có tương tác từ nhân viên.</p>
+            </div>
+            <div class="endpoint-card" style="margin: 0; border-left: 4px solid #0284c7;">
+              <div class="endpoint-head"><code>contacted</code><span class="badge" style="background: rgba(2,132,199,0.15); color: #0284c7;">Đang tư vấn</span></div>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Đã gọi điện hoặc nhắn tin trao đổi ban đầu.</p>
+            </div>
+            <div class="endpoint-card" style="margin: 0; border-left: 4px solid #d97706;">
+              <div class="endpoint-head"><code>qualified</code><span class="badge" style="background: rgba(217,119,6,0.15); color: #d97706;">Tiềm năng</span></div>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Khách có nhu cầu thực tế và phù hợp giải pháp.</p>
+            </div>
+            <div class="endpoint-card" style="margin: 0; border-left: 4px solid #059669;">
+              <div class="endpoint-head"><code>won</code><span class="badge" style="background: rgba(5,150,105,0.15); color: #059669;">Thành công</span></div>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Đã ký hợp đồng hoặc chuyển đổi đơn hàng.</p>
+            </div>
+            <div class="endpoint-card" style="margin: 0; border-left: 4px solid #dc2626;">
+              <div class="endpoint-head"><code>lost</code><span class="badge" style="background: rgba(220,38,38,0.15); color: #dc2626;">Thất bại</span></div>
+              <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Khách hủy nhu cầu hoặc không đạt tiêu chí.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-bottom: 20px;">
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th style="width: 140px;">Key chuẩn (Ghi vào DB)</th>
+                  <th style="width: 150px;">Tên hiển thị UI</th>
+                  <th style="width: 110px;">Màu sắc</th>
+                  <th>Các giá trị kế thừa trong DB (Legacy Values khi đọc)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>new</code></td>
+                  <td><strong>Mới tiếp cận</strong></td>
+                  <td><span class="badge" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">#64748b</span></td>
+                  <td><code>"Mới tiếp cận"</code>, <code>"moi_tiep_can"</code>, <code>"New"</code>, <code>"new"</code></td>
+                </tr>
+                <tr>
+                  <td><code>contacted</code></td>
+                  <td><strong>Đang tư vấn</strong></td>
+                  <td><span class="badge" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">#0284c7</span></td>
+                  <td><code>"Đang tư vấn"</code>, <code>"dang_tu_van"</code>, <code>"consulting"</code>, <code>"Contacted"</code>, <code>"in_progress"</code></td>
+                </tr>
+                <tr>
+                  <td><code>qualified</code></td>
+                  <td><strong>Tiềm năng</strong></td>
+                  <td><span class="badge" style="background: #fef3c7; color: #d97706; border: 1px solid #fde68a;">#d97706</span></td>
+                  <td><code>"Tiềm năng"</code>, <code>"tiem_nang"</code>, <code>"Qualified"</code>, <code>"qualified"</code></td>
+                </tr>
+                <tr>
+                  <td><code>won</code></td>
+                  <td><strong>Thành công</strong></td>
+                  <td><span class="badge" style="background: #d1fae5; color: #059669; border: 1px solid #a7f3d0;">#059669</span></td>
+                  <td><code>"Thành công"</code>, <code>"thanh_cong"</code>, <code>"Won"</code>, <code>"won"</code>, <code>"customer"</code>, <code>"converted"</code></td>
+                </tr>
+                <tr>
+                  <td><code>lost</code></td>
+                  <td><strong>Thất bại</strong></td>
+                  <td><span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">#dc2626</span></td>
+                  <td><code>"Thất bại"</code>, <code>"that_bai"</code>, <code>"Lost"</code>, <code>"lost"</code>, <code>"unqualified"</code></td>
+                </tr>
+                <tr>
+                  <td><code>""</code> / rỗng</td>
+                  <td><strong>Chưa có trạng thái</strong></td>
+                  <td><span class="badge" style="background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0;">#94a3b8</span></td>
+                  <td><code>""</code>, <code>null</code>, <code>undefined</code>, <code>"__unassigned__"</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Quy tắc Bắt buộc cho App khi xử lý <code>lead_status</code>:</h4>
+          <ul>
+            <li><strong>Khi Đọc dữ liệu (GET list / search / filter):</strong> BẮT BUỘC chạy qua hàm <code>normalizeLeadStatus(val)</code> để quy về key chuẩn trước khi so sánh logic hoặc đưa vào cột Kanban. Tuyệt đối không so sánh trực tiếp chuỗi dạng <code>status === "contacted"</code>.</li>
+            <li><strong>Khi Ghi dữ liệu (PATCH / POST / Kéo thả Kanban):</strong> LUÔN LUÔN ghi key chuẩn quốc tế: <code>"new"</code>, <code>"contacted"</code>, <code>"qualified"</code>, <code>"won"</code>, <code>"lost"</code>. CẤM ghi chuỗi tiếng Việt. Kéo vào Chưa có trạng thái gửi <code>null</code>.</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">TypeScript / Dart Normalizer</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>// Hàm chuẩn hóa Lead Status trên App Client
+export function normalizeLeadStatus(val?: string | null): string {
+  if (!val || typeof val !== 'string') return '';
+  const trimmed = val.trim();
+  if (!trimmed || trimmed === '__unassigned__') return '';
+
+  const lower = trimmed.toLowerCase();
+  if (['new', 'moi_tiep_can', 'mới tiếp cận'].includes(lower)) return 'new';
+  if (['contacted', 'dang_tu_van', 'đang tư vấn', 'consulting', 'in_progress'].includes(lower)) return 'contacted';
+  if (['qualified', 'tiem_nang', 'tiềm năng'].includes(lower)) return 'qualified';
+  if (['won', 'thanh_cong', 'thành công', 'customer', 'converted'].includes(lower)) return 'won';
+  if (['lost', 'that_bai', 'thất bại', 'unqualified'].includes(lower)) return 'lost';
+
+  return trimmed; // fallback nếu có custom status mới
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- 5.3 Assigned Agent Deep Dive -->
+        <div id="sec-assigned-agent-deep" style="margin-top: 32px;">
+          <h3>5.3 Chuyên sâu về <code>assigned_agent</code> (Nhân viên Phụ trách &amp; Lookup ID)</h3>
+          <p>Trường <code>assigned_agent</code> chỉ lưu số nguyên ID nhân viên (ví dụ: <code>82</code>), <strong>hoàn toàn không chứa thông tin Họ tên hay Avatar</strong>. API Contact cũng không tự JOIN thông tin user.</p>
+
+          <div class="steps-list" style="margin-bottom: 20px;">
+            <div class="step-item">
+              <div class="step-badge">B1</div>
+              <div class="step-body">
+                <strong>Cache Master Data Agents trước:</strong> Khi khởi chạy CRM, gọi ngay <code>GET /api/v1/accounts/{accountId}/agents</code> và lưu vào RAM dạng Dictionary/Map: <code>Map&lt;number, Agent&gt;</code>.
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">B2</div>
+              <div class="step-body">
+                <strong>Tra cứu khi render:</strong> Lấy <code>agentId = contact.custom_attributes?.assigned_agent</code>. Nếu có ID, tra trong Map để hiển thị tên và avatar. Nếu rỗng hoặc <code>null</code>, hiển thị nhãn <em>"Chưa phân công"</em>.
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-badge">B3</div>
+              <div class="step-body">
+                <strong>Gán &amp; Bỏ gán nhân viên:</strong> Gọi <code>PATCH /contacts/{id}</code> với <code>{ "custom_attributes": { "assigned_agent": 82 } }</code>. Khi hủy phân công, gửi <code>{ "custom_attributes": { "assigned_agent": null } }</code>.
+              </div>
+            </div>
+          </div>
+
+          <h4>Xử lý 2 Tab Hệ thống: "Của tôi" &amp; "Chưa phân công"</h4>
+          <p>Trên App khi người dùng chọn tab hệ thống, gửi request <code>POST /api/v1/accounts/{accountId}/contacts/filter</code> với điều kiện sau:</p>
+
+          <div class="cards-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="endpoint-card" style="margin: 0;">
+              <div class="endpoint-head"><strong>Tab "Của tôi" (Mine)</strong></div>
+              <p style="font-size: 13px; margin-bottom: 8px;">Lọc danh sách contact do chính User hiện tại phụ trách (truyền ID user):</p>
+              <div class="code-block" style="margin: 0;">
+                <pre style="margin: 0;"><code>{
+  "payload": [
+    {
+      "attribute_key": "assigned_agent",
+      "filter_operator": "equal_to",
+      "values": [82],
+      "query_operator": "and",
+      "attribute_model": "custom_attributes"
+    }
+  ]
+}</code></pre>
+              </div>
+            </div>
+
+            <div class="endpoint-card" style="margin: 0;">
+              <div class="endpoint-head"><strong>Tab "Chưa phân công" (Unassigned)</strong></div>
+              <p style="font-size: 13px; margin-bottom: 8px;">Dùng toán tử <code>is_not_present</code> để lọc các contact chưa gán ai:</p>
+              <div class="code-block" style="margin: 0;">
+                <pre style="margin: 0;"><code>{
+  "payload": [
+    {
+      "attribute_key": "assigned_agent",
+      "filter_operator": "is_not_present",
+      "values": [],
+      "query_operator": "and",
+      "attribute_model": "custom_attributes"
+    }
+  ]
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6 -->
+      <section id="sec-mobile-guide" class="doc-section" data-searchable>
+        <h2><span class="sec-num">6</span> Hướng dẫn Triển khai cho Mobile App</h2>
+
+        <div id="sec-infinite-scroll">
+          <h3>6.1. Cuộn vô tận (Infinite Scroll) &amp; Kéo để làm mới (Pull-to-refresh)</h3>
+          <ul>
+            <li>Khởi tạo luôn nạp <code>page = 1</code>.</li>
+            <li>Khi cuộn tới 80% danh sách: kiểm tra <code>hasMore = contacts.length &lt; meta.count</code>. Nếu còn dữ liệu thì tăng <code>page += 1</code> và tải tiếp để nối mảng.</li>
+            <li>Kéo vuốt làm mới (Pull-to-refresh): gọi lại <code>page = 1</code> và thay thế toàn bộ dữ liệu.</li>
+          </ul>
+        </div>
+
+        <div id="sec-views">
+          <h3>6.2. Hỗ trợ 2 Chế độ hiển thị: List View &amp; Kanban View</h3>
+          <ul>
+            <li><strong>Chế độ Danh sách:</strong> Hiển thị thẻ tóm tắt (Avatar, Tên, Số điện thoại, Tag Trạng thái, Doanh nghiệp).</li>
+            <li><strong>Chế độ Phễu Kanban:</strong> Phân theo 5 cột trạng thái Lead. Khi kéo thả thẻ sang cột khác, áp dụng cơ chế <em>Optimistic Update</em> (cập nhật UI ngay lập tức rồi gửi API <code>PATCH</code> ngầm). Nếu API lỗi thì hoàn tác vị trí thẻ và bắn thông báo Toast lỗi.</li>
+          </ul>
+        </div>
+
+        <div id="sec-swipe">
+          <h3>6.3. Thao tác Quẹt Nhanh trên Danh sách (Swipe Gestures)</h3>
+          <ul>
+            <li><strong>Quẹt sang phải:</strong> Kích hoạt gọi điện thoại nhanh (<code>tel:</code>) hoặc gửi tin nhắn Zalo/SMS.</li>
+            <li><strong>Quẹt sang trái:</strong> Mở nhanh menu tùy chọn: Phân công nhân viên, Đổi trạng thái Lead, Xem chi tiết hoặc Xóa liên hệ.</li>
+          </ul>
+        </div>
+      </section>
+
+      <nav class="page-pager" aria-label="Điều hướng trang tiếp theo">
+        <a href="./webhooks.html" class="pager-link">
+          <span class="pager-label">&larr; Trang trước</span>
+          <span class="pager-title">4. Webhook Contact &amp; Company</span>
+        </a>
+        <a href="./index.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Quay lại trang đầu &rarr;</span>
+          <span class="pager-title">Tổng quan Tài liệu xINBOX</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./assets/docs.js" defer></script>
+</body>
+</html>

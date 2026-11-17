@@ -6,3 +6,4 @@ Interactive developer documentation for integrating **xINBOX** across third-part
 - **2. xINBOX Iframe Embed & `postMessage` Protocol:** `iframe-embed.html`
 - **3. Multi-Channel New Conversation Modal:** `contact-modal.html`
 - **4. Contact & Company Outgoing Webhooks:** `webhooks.html`
+- **5. Contacts List & Management API:** `contact-list.html` (Markdown: `contact-list.md`)

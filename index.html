@@ -27,6 +27,7 @@
         <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
         <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
         <a href="./webhooks.html" class="nav-tab">4. Webhook</a>
+        <a href="./contact-list.html" class="nav-tab">5. Danh sách Liên hệ</a>
       </nav>
 
       <div class="topbar-actions">
@@ -51,7 +52,7 @@
           Tài liệu chuẩn hóa cho đội ngũ phát triển bên thứ ba tích hợp hệ sinh thái chăm sóc khách hàng đa kênh <strong>xINBOX</strong> vào bất kỳ nền tảng Web hoặc Mobile nào: từ tầng Quản trị &amp; Ánh xạ Nhân sự, Nhúng khung chat Iframe kèm giao thức <code>postMessage</code> hai chiều, đến Modal Soạn tin nhắn Đa kênh / Email / Zalo.
         </p>
         <div class="meta-strip">
-          <span class="meta-pill">4 Phân hệ Tích hợp Độc lập</span>
+          <span class="meta-pill">5 Phân hệ Tích hợp Độc lập</span>
           <span class="meta-pill">2 Khối API: xINBOX Gateway + Nội bộ Hệ thống Tích hợp</span>
           <span class="meta-pill">Zero Framework Lock-in</span>
         </div>
@@ -59,7 +60,7 @@
 
       <div id="emptySearch" class="empty-search is-hidden">Không tìm thấy mục nào khớp từ khóa tìm kiếm.</div>
 
-      <section class="cards-grid" aria-label="Danh sách 4 tài liệu đặc tả">
+      <section class="cards-grid" aria-label="Danh sách 5 tài liệu đặc tả">
         <a href="./admin-integration.html" class="portal-card" data-searchable>
           <div class="portal-card-head">
             <span class="portal-card-icon" aria-hidden="true">
@@ -116,6 +117,21 @@
           <p>Đặc tả outgoing webhook (<code>contact_created</code>, <code>contact_updated</code>), liên hệ trong <code>message_created</code>, đồng bộ hai chiều qua <code>identifier</code>, xác thực chữ ký HMAC-SHA256 và giới hạn sự kiện Company.</p>
           <div class="portal-card-footer">
             <span>Mở đặc tả Webhook</span>
+            <span aria-hidden="true">&rarr;</span>
+          </div>
+        </a>
+
+        <a href="./contact-list.html" class="portal-card" data-searchable>
+          <div class="portal-card-head">
+            <span class="portal-card-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span class="badge badge-get">PHẦN 5</span>
+          </div>
+          <h3>Danh sách &amp; Quản lý Liên hệ (Contacts API)</h3>
+          <p>Đặc tả toàn diện cho Mobile App &amp; Web CRM: quy trình nạp dữ liệu, phân trang 50/page &amp; Infinite Scroll, tìm kiếm debounce 300ms, lọc nâng cao, ma trận map thuộc tính, 5 trạng thái Lead chuẩn, kéo thả Kanban và ghi chú nội bộ.</p>
+          <div class="portal-card-footer">
+            <span>Mở đặc tả Danh sách Liên hệ</span>
             <span aria-hidden="true">&rarr;</span>
           </div>
         </a>

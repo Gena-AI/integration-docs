@@ -27,6 +27,7 @@
         <a href="./iframe-embed.html" class="nav-tab">2. Nhúng Iframe</a>
         <a href="./contact-modal.html" class="nav-tab">3. Modal Hội thoại</a>
         <a href="./webhooks.html" class="nav-tab is-active" aria-current="page">4. Webhook</a>
+        <a href="./contact-list.html" class="nav-tab">5. Danh sách Liên hệ</a>
       </nav>
 
       <div class="topbar-actions">
@@ -126,7 +127,7 @@
         </div>
         <div class="callout callout-info">
           <svg class="callout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <p>Tên HTTP header giữ nguyên tiền tố <code>X-Chatwoot-</code> (<code>X-Chatwoot-Delivery</code>, <code>X-Chatwoot-Timestamp</code>, <code>X-Chatwoot-Signature</code>) để tương thích giao thức gốc phía máy chủ. Bên nhận đọc đúng các tên header này khi xác thực.</p>
+          <p>Tên HTTP header mang tiền tố kỹ thuật <code>X-Chatwoot-</code> (<code>X-Chatwoot-Delivery</code>, <code>X-Chatwoot-Timestamp</code>, <code>X-Chatwoot-Signature</code>) theo đặc tả giao thức hạ tầng Webhook của máy chủ xINBOX. Bên nhận đọc đúng các tên header này khi xác thực.</p>
         </div>
       </section>
 
@@ -380,9 +381,9 @@ def xinbox_webhook():
           <span class="pager-label">&larr; Trang trước</span>
           <span class="pager-title">3. Modal Soạn &amp; Gửi Tin nhắn Contact</span>
         </a>
-        <a href="./index.html" class="pager-link" style="text-align: end;">
-          <span class="pager-label">Quay lại trang đầu &rarr;</span>
-          <span class="pager-title">Tổng quan Tài liệu xINBOX</span>
+        <a href="./contact-list.html" class="pager-link" style="text-align: end;">
+          <span class="pager-label">Trang tiếp theo &rarr;</span>
+          <span class="pager-title">5. Danh sách &amp; Quản lý Liên hệ (Contacts API)</span>
         </a>
       </nav>
     </main>
