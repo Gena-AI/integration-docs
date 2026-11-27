@@ -157,7 +157,7 @@
     <a class="ov" href="#yc1">
       <span class="num">YC1</span>
       <h3>Quản lý mẫu tin nhắn, nhãn từ CRM</h3>
-      <p>Bàn giao API để CRM tạo, sửa, xóa mẫu phản hồi và nhãn.</p>
+      <p>Đã có API. xINBOX nâng cấp nhãn, mẫu phản hồi trước rồi báo CRM cập nhật.</p>
       <span class="tag ok">Đã có sẵn</span>
     </a>
     <a class="ov" href="#yc2">
@@ -191,7 +191,7 @@
       </div>
       <div class="card answer">
         <div class="label">xINBOX phản hồi</div>
-        <p><b>xINBOX đã có sẵn API</b> cho nhãn và mẫu phản hồi (tin nhắn mẫu). Phía CRM dùng các API này để làm giao diện quản lý ngay trên CRM, không cần chờ phát triển thêm.</p>
+        <p>Thực tế <b>xINBOX đã có sẵn API</b> cho nhãn và mẫu phản hồi (tin nhắn mẫu).</p>
         <div class="links">
           <a class="ref" href="../admin-integration.html#sec-group-d" target="_blank" rel="noopener">Tài liệu API Nhãn ↗</a>
           <a class="ref" href="../admin-integration.html#sec-group-ef" target="_blank" rel="noopener">Tài liệu API Mẫu phản hồi ↗</a>
@@ -199,24 +199,20 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dữ liệu</th><th>CRM làm được</th><th>Lưu ý</th></tr></thead>
-          <tbody>
-            <tr><td><b>Nhãn</b></td><td>Xem danh sách, tạo, sửa, xóa nhãn</td><td>Tạo, sửa, xóa nhãn cần mã truy cập của tài khoản <b>quản trị viên</b></td></tr>
-            <tr><td><b>Mẫu phản hồi</b></td><td>Xem danh sách, tạo, sửa, xóa mẫu phản hồi</td><td>Thay đổi trên CRM hiện ngay trong xINBOX và ngược lại</td></tr>
-          </tbody>
-        </table>
+    <div class="callout todo">
+      <div class="label">Hướng xử lý</div>
+      <ul class="list">
+        <li>xINBOX sẽ <b>nâng cấp tính năng nhãn và mẫu phản hồi trước</b> (phân nhóm, phân quyền ở YC4), sau đó báo lại để phía CRM cập nhật theo API mới.</li>
+        <li>Trong thời gian này, muốn <b>thêm hoặc chỉnh sửa</b> nhãn và mẫu phản hồi thì thực hiện trên <b>xINBOX</b>: vào <b>Cài đặt</b>, chọn <b>Nhãn</b> hoặc <b>Mẫu phản hồi</b>.</li>
+      </ul>
+      <div class="links">
+        <a class="ref" href="https://xinbox.hub.vn/video/#/v/nhan" target="_blank" rel="noopener">▶ Video hướng dẫn Nhãn ↗</a>
+        <a class="ref" href="https://xinbox.hub.vn/video/#/v/tm" target="_blank" rel="noopener">▶ Video hướng dẫn Mẫu phản hồi ↗</a>
       </div>
     </div>
 
-    <div class="callout todo">
-      <div class="label">Phía GNH cần làm</div>
-      <p>Đội CRM đọc tài liệu ở 2 link trên và tích hợp. Mã truy cập (access token) lấy trong trang Hồ sơ cá nhân của tài khoản trên xINBOX.</p>
-    </div>
-
     <h4 class="sub-title">Video tham khảo</h4>
+    <p class="small muted" style="margin-bottom:10px">Cách quản lý nhãn, mẫu phản hồi trên myXteam, để phía CRM tham khảo.</p>
     <div class="video">
       <video controls preload="metadata" src="https://s3.hcm-1.cloud.cmctelecom.vn/mxt-workchat/677639c30e9bfd2530f2a593/212481/67d55afb-0da7-42c5-9284-42e7d9f5d440/t%C3%ADnh%20n%C4%83ng%20th%C3%AAm%20nh%C3%A3n,%20m%E1%BA%ABu%20ph%E1%BA%A3n%20h%E1%BB%93i.mp4"></video>
     </div>
