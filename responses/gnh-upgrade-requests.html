@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phản hồi yêu cầu GNH</title>
+<link rel="icon" type="image/svg+xml" href="../assets/logos/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F7F8F2; --surface: #FFFFFF; --subtle: #EDF2EE; --line: #DCE6DF;
+    --ink: #11231D; --muted: #53655E; --green: #0F6B4F; --green-ink: #FFFFFF;
+    --deep: #0D2C22; --lime: #CBF451; --mint: #DDF7EC; --mint-ink: #0D5C44;
+    --amber: #92400E; --amber-bg: #FEF3C7; --red: #B42318; --red-bg: #FEE4E2;
+    --shadow: 0 1px 2px rgba(17,35,29,.05), 0 4px 16px rgba(17,35,29,.05);
+    --zalo: #0068FF; --ig: #D6249F; --fb: #1877F2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0D1613; --surface: #14201B; --subtle: #1A2823; --line: #26372F;
+      --ink: #E7F0EB; --muted: #9AAFA5; --green: #1FD8A4; --green-ink: #0D2C22;
+      --deep: #ADF0D4; --mint: #123A2E; --mint-ink: #ADF0D4;
+      --amber: #F5B65A; --amber-bg: #3A2A10; --red: #F97066; --red-bg: #3B1513;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0D1613; --surface: #14201B; --subtle: #1A2823; --line: #26372F;
+    --ink: #E7F0EB; --muted: #9AAFA5; --green: #1FD8A4; --green-ink: #0D2C22;
+    --deep: #ADF0D4; --mint: #123A2E; --mint-ink: #ADF0D4;
+    --amber: #F5B65A; --amber-bg: #3A2A10; --red: #F97066; --red-bg: #3B1513;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: Manrope, "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  h1, h2, h3, h4 { margin: 0; line-height: 1.25; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 18px; }
+  a { color: inherit; text-decoration: none; }
+  b { font-weight: 700; }
+
+  /* Header */
+  header.hero { padding: 48px 0 32px; }
+  .eyebrow { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 3px var(--mint); }
+  .hero h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; margin: 12px 0; }
+  .hero .lead { color: var(--muted); max-width: 680px; font-size: 16px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--muted); }
+
+  /* Overview */
+  .overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .ov { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 16px; background: var(--surface);
+    border: 1px solid var(--line); box-shadow: var(--shadow); transition: border-color .15s, transform .15s; }
+  .ov:hover { border-color: var(--green); transform: translateY(-2px); }
+  .ov .num { font-size: 12px; font-weight: 800; color: var(--green); letter-spacing: .06em; }
+  .ov h3 { font-size: 16px; font-weight: 700; }
+  .ov p { font-size: 13px; color: var(--muted); }
+  .ov .tag { align-self: flex-start; margin-top: auto; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .tag.ok { background: var(--mint); color: var(--mint-ink); }
+  .tag.new { background: var(--amber-bg); color: var(--amber); }
+  .tag.neutral { background: var(--subtle); color: var(--muted); }
+
+  /* Sections */
+  section.yc { margin-top: 56px; scroll-margin-top: 16px; }
+  .yc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-bottom: 16px; }
+  .yc-badge { font-size: 13px; font-weight: 800; color: var(--green-ink); background: var(--green); padding: 3px 10px; border-radius: 8px; }
+  .yc-head h2 { font-size: clamp(20px, 3.2vw, 26px); font-weight: 800; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+  .quote { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .said { background: var(--deep); color: var(--paper); border-color: transparent; }
+  .label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .said .label { color: var(--lime); }
+  .said p { font-size: 17px; font-weight: 600; }
+  .answer p + p { margin-top: 8px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .sub-title { margin: 24px 0 10px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .list { display: grid; gap: 6px; }
+
+  /* Links */
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ref { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
+    background: var(--green); color: var(--green-ink); font-size: 14px; font-weight: 700; }
+  .ref:hover { background: var(--deep); color: var(--paper); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .step { padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+  .step .n { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-weight: 800;
+    background: var(--lime); color: #11231D; margin-bottom: 10px; }
+  .step h4 { margin-bottom: 4px; }
+  .step p { font-size: 13px; color: var(--muted); }
+  .step .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+  /* Chips */
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px;
+    font-weight: 700; background: var(--surface); border: 1px solid var(--line); }
+  .chip.on { background: var(--mint); border-color: var(--green); color: var(--mint-ink); }
+  .ch { display: inline-block; font-size: 10px; font-weight: 800; color: #fff; padding: 1px 6px; border-radius: 5px; }
+  .ch.zl { background: var(--zalo); } .ch.ig { background: var(--ig); } .ch.fb { background: var(--fb); }
+
+  /* Video */
+  .video { position: relative; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #000; }
+  .video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  /* Callouts */
+  .callout { margin-top: 12px; border-radius: 16px; padding: 16px 20px; font-size: 14px; }
+  .callout .label { margin-bottom: 4px; }
+  .callout.todo { border: 1px dashed var(--green); background: var(--mint); color: var(--mint-ink); }
+  .callout.todo .label { color: var(--mint-ink); }
+
+  footer { margin: 56px 0 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+
+  @media (max-width: 520px) {
+    header.hero { padding-top: 32px; }
+    .card { padding: 16px; }
+    th, td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>xINBOX · Gửi GNH</span>
+    <h1>Phản hồi 4 yêu cầu nâng cấp</h1>
+    <p class="lead">Cách xINBOX đáp ứng từng yêu cầu của GNH: phần nào đã có sẵn để dùng ngay, phần nào sẽ được phát triển thêm và hoạt động ra sao.</p>
+    <div class="meta">
+      <span class="pill">27/11/2026</span>
+    </div>
+  </header>
+
+  <!-- Tổng quan -->
+  <nav class="overview" aria-label="Tổng quan 4 yêu cầu">
+    <a class="ov" href="#yc1">
+      <span class="num">YC1</span>
+      <h3>Quản lý mẫu tin nhắn, nhãn từ CRM</h3>
+      <p>Bàn giao API để CRM tạo, sửa, xóa mẫu phản hồi và nhãn.</p>
+      <span class="tag ok">Đã có sẵn</span>
+    </a>
+    <a class="ov" href="#yc2">
+      <span class="num">YC2</span>
+      <h3>Gộp hội thoại nhiều kênh</h3>
+      <p>Widget xINBOX đã lọc được theo nhiều kênh cùng lúc. Kèm video hướng dẫn.</p>
+      <span class="tag ok">Đã có sẵn</span>
+    </a>
+    <a class="ov" href="#yc3">
+      <span class="num">YC3</span>
+      <h3>Gửi tin nhắn hàng loạt</h3>
+      <p>Phát triển module Chiến dịch gửi tin, chọn người nhận theo hội thoại hoặc theo nhãn.</p>
+      <span class="tag new">Phát triển mới</span>
+    </a>
+    <a class="ov" href="#yc4">
+      <span class="num">YC4</span>
+      <h3>Mẫu tin nhắn, nhãn riêng của nhân viên</h3>
+      <p>Phân nhóm và phân quyền cho nhãn và mẫu phản hồi.</p>
+      <span class="tag new">Phát triển mới</span>
+    </a>
+  </nav>
+
+  <!-- YC1 -->
+  <section class="yc" id="yc1">
+    <div class="yc-head"><span class="yc-badge">YC1</span><h2>Quản lý mẫu tin nhắn, nhãn từ CRM</h2></div>
+
+    <div class="quote">
+      <div class="card said">
+        <div class="label">GNH yêu cầu</div>
+        <p>“Đưa các tính năng tạo tin nhắn mẫu, nhãn,... qua bên CRM”</p>
+      </div>
+      <div class="card answer">
+        <div class="label">xINBOX phản hồi</div>
+        <p><b>xINBOX đã có sẵn API</b> cho nhãn và mẫu phản hồi (tin nhắn mẫu). Phía CRM dùng các API này để làm giao diện quản lý ngay trên CRM, không cần chờ phát triển thêm.</p>
+        <div class="links">
+          <a class="ref" href="../admin-integration.html#sec-group-d" target="_blank" rel="noopener">Tài liệu API Nhãn ↗</a>
+          <a class="ref" href="../admin-integration.html#sec-group-ef" target="_blank" rel="noopener">Tài liệu API Mẫu phản hồi ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dữ liệu</th><th>CRM làm được</th><th>Lưu ý</th></tr></thead>
+          <tbody>
+            <tr><td><b>Nhãn</b></td><td>Xem danh sách, tạo, sửa, xóa nhãn</td><td>Tạo, sửa, xóa nhãn cần mã truy cập của tài khoản <b>quản trị viên</b></td></tr>
+            <tr><td><b>Mẫu phản hồi</b></td><td>Xem danh sách, tạo, sửa, xóa mẫu phản hồi</td><td>Thay đổi trên CRM hiện ngay trong xINBOX và ngược lại</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout todo">
+      <div class="label">Phía GNH cần làm</div>
+      <p>Đội CRM đọc tài liệu ở 2 link trên và tích hợp. Mã truy cập (access token) lấy trong trang Hồ sơ cá nhân của tài khoản trên xINBOX.</p>
+    </div>
+
+    <h4 class="sub-title">Video tham khảo</h4>
+    <div class="video">
+      <video controls preload="metadata" src="https://s3.hcm-1.cloud.cmctelecom.vn/mxt-workchat/677639c30e9bfd2530f2a593/212481/67d55afb-0da7-42c5-9284-42e7d9f5d440/t%C3%ADnh%20n%C4%83ng%20th%C3%AAm%20nh%C3%A3n,%20m%E1%BA%ABu%20ph%E1%BA%A3n%20h%E1%BB%93i.mp4"></video>
+    </div>
+  </section>
+
+  <!-- YC2 -->
+  <section class="yc" id="yc2">
+    <div class="yc-head"><span class="yc-badge">YC2</span><h2>Gộp hội thoại nhiều kênh</h2></div>
+
+    <div class="quote">
+      <div class="card said">
+        <div class="label">GNH yêu cầu</div>
+        <p>“Gộp hội thoại kênh giống bên Pancake”</p>
+      </div>
+      <div class="card answer">
+        <div class="label">xINBOX phản hồi</div>
+        <p><b>Widget xINBOX đã có bộ lọc theo kênh</b>, chọn được nhiều kênh cùng lúc. Hội thoại của các kênh đã chọn hiện chung trong một danh sách, nên nhân viên xử lý nhiều kênh ở cùng một chỗ mà không phải chuyển qua lại.</p>
+      </div>
+    </div>
+
+    <h4 class="sub-title">Cách dùng</h4>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h4>Mở Bộ lọc nâng cao</h4>
+        <p>Bấm biểu tượng phễu lọc ở góc trên danh sách hội thoại.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h4>Chọn các kênh muốn gom</h4>
+        <p>Ở mục <b>Kênh CSKH (Inbox)</b>, bấm chọn một hoặc nhiều kênh. Góc phải hiện số kênh đã chọn.</p>
+        <div class="chips" aria-hidden="true">
+          <span class="chip on"><span class="ch zl">Zalo</span>Zalo 345</span>
+          <span class="chip on"><span class="ch zl">OA</span>ZaloOA myXteam</span>
+          <span class="chip on">xINBOX Web</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h4>Bấm Áp dụng</h4>
+        <p>Danh sách chỉ còn hội thoại của các kênh đã chọn, gộp chung một chỗ.</p>
+      </div>
+      <div class="step">
+        <div class="n">4</div>
+        <h4>Xem lại tất cả</h4>
+        <p>Mở lại bộ lọc, bấm <b>Xóa bộ lọc</b>.</p>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:10px">Trong cùng bộ lọc có thể kết hợp thêm lọc theo người xử lý và theo nhãn.</p>
+
+    <h4 class="sub-title">Video hướng dẫn</h4>
+    <div class="video">
+      <video controls preload="metadata" src="https://s3.hcm-1.cloud.cmctelecom.vn/mxt-workchat/677639c30e9bfd2530f2a593/212481/47727b65-9663-4e16-b30f-7c142107792b/b%E1%BB%99%20l%E1%BB%8Dc%20n%C3%A2ng%20cao%20%C4%91%E1%BB%83%20gom%20nh%C3%B3m%20k%C3%AAnh.mp4"></video>
+    </div>
+  </section>
+
+  <!-- YC3 -->
+  <section class="yc" id="yc3">
+    <div class="yc-head"><span class="yc-badge">YC3</span><h2>Gửi tin nhắn hàng loạt</h2></div>
+
+    <div class="quote">
+      <div class="card said">
+        <div class="label">GNH yêu cầu</div>
+        <p>“Gửi tin nhắn hàng loạt theo hội thoại, theo nhãn”</p>
+      </div>
+      <div class="card answer">
+        <div class="label">xINBOX phản hồi</div>
+        <p>xINBOX sẽ phát triển <b>module Chiến dịch gửi tin</b>. Mỗi chiến dịch là một lần gửi một nội dung tới nhiều khách, chọn khách theo hội thoại hoặc theo nhãn.</p>
+        <p class="small muted">Triển khai đầu tiên cho kênh Zalo cá nhân, các kênh khác bổ sung sau.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- YC4 -->
+  <section class="yc" id="yc4">
+    <div class="yc-head"><span class="yc-badge">YC4</span><h2>Mẫu tin nhắn, nhãn riêng của nhân viên</h2></div>
+
+    <div class="quote">
+      <div class="card said">
+        <div class="label">GNH yêu cầu</div>
+        <p>“Nhân viên có thể tạo mẫu tin nhắn, nhãn riêng cho mình và chỉ có quản trị viên và nhân viên đó được thấy”</p>
+      </div>
+      <div class="card answer">
+        <div class="label">xINBOX phản hồi</div>
+        <p>xINBOX sẽ bổ sung <b>phân quyền</b> và <b>phân nhóm</b> cho cả nhãn và mẫu phản hồi. Nhân viên tạo được nhãn, mẫu phản hồi của riêng mình, và sắp xếp chúng theo nhóm để dễ tìm.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    xINBOX · Phản hồi yêu cầu nâng cấp của GNH · 27/11/2026
+  </footer>
+
+</div>
+</body>
+</html>
